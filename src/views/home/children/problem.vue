@@ -24,7 +24,7 @@
             </li>
             <li class="Progress-item">
               <span>3</span>
-              <p>考试描述</p>
+              <p>操作设置</p>
             </li>
           </ul>
         </div>
