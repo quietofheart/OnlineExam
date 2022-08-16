@@ -52,12 +52,40 @@
           </li>
         </ul>
         <!-- 输入新建第二部分 -->
-        <ul v-if="isShowOperationTwo" class="input-exam-two">
-          <li>
-            <span>单选题:</span>
-            
-          </li>
-        </ul>
+        <div v-if="isShowOperationTwo" class="input-exam-two">
+          <!-- 考题列表 -->
+          <div class="item-lists" v-if="itemLists.length > 0">
+            <ul>
+              <li v-for="(item, index) in itemLists">
+                <span>{{ item.name }}</span>
+                <span>{{ item.type }}</span>
+                <span>{{ item.fraction }}</span>
+                <span>
+                  <img @click="delItem(index)" src="@/assets/img/home/problem/del.svg" alt="">
+                </span>
+              </li>
+            </ul>
+          </div>
+          <!-- 错误文本提示 -->
+          <span v-else class="not-item-lists">暂无考题，请在下方输入内容来新建考题</span>
+          <!-- 操作按钮 -->
+          <div class="new-item">
+            <select>
+              <option value="1" selected>单选题</option>
+              <option value="2">多选题</option>
+              <option value="3">判断题</option>
+              <option value="4">填空题</option>
+            </select>
+            <div v-if="isShowNewItem">
+              <label for="item-name">题干:<input type="text" id="item-name"></label>
+              <input type="text">
+              <input type="text">
+              <input type="text">
+              <input type="text">
+            </div>
+            <button>新建考题</button>
+          </div>
+        </div>
         <!-- 输入新建第三部分 -->
         <ul v-if="isShowOperationThree" class="input-exam">
           <li>
@@ -156,14 +184,15 @@ export default {
   data() {
     return {
       isShowMain: false,// 是否显示表格
-      isShowNew: false,// 是否显示弹出框
-      isShowOperationOne: true,//是否显示底部操作确认第一部分
-      isShowOperationTwo: false,//是否显示底部操作确认第二部分
+      isShowNew: true,// 是否显示弹出框 11111
+      isShowOperationOne: false,//是否显示底部操作确认第一部分 11111
+      isShowOperationTwo: true,//是否显示底部操作确认第二部分 11111
       isShowOperationThree: false,//是否显示底部操作确认第三部分
       isShowSuccessOne: false,// 是否显示第一个成功进度条样式
       isShowSuccessTwo: false,// 是否显示第二个成功进度条样式
       isShowSuccessThree: false,// 是否显示第三个成功进度条样式
       isShowErr: [false, false, false, false, false],// 是否显示错误文本
+      isShowNewItem:true,
       examName: '',// 新建考试名
       examMessage: '',// 新建考试描述
       examFraction: '',// 新建考试分数
@@ -175,6 +204,23 @@ export default {
       examTimeReg: /^[1-9]{1,3}$/,// 新建考试时间正则
       examTypeReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,10}$/,// 新建考试学科正则
       exams: [],// 考试列表
+      itemLists: [{
+        name: '假设A=B',
+        type: '单选题',
+        fraction: 5,
+      }, {
+        name: '假设A=B2',
+        type: '单选题',
+        fraction: 5,
+      }, {
+        name: '假设A=B3',
+        type: '单选题',
+        fraction: 5,
+      }, {
+        name: '假设A=B4',
+        type: '单选题',
+        fraction: 5,
+      }],// 考题列表
     }
   },
   methods: {
@@ -277,6 +323,9 @@ export default {
       let dateValue = aData.getFullYear() + "-" + (aData.getMonth() + 1) + "-" + aData.getDate();
       return dateValue
     },
+    delItem(index) { // 删除考题
+      this.itemLists.splice(index, 1)
+    }
   },
   // 生命周期钩子
   mounted() {
@@ -568,15 +617,120 @@ h2 {
 /* 弹出框第二步内容 */
 .input-exam-two {
   min-height: 700px;
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  align-items: center;
+  width: 100%;
   position: relative;
 }
-.input-exam-two span{
+
+/* 考题列表 */
+.item-lists {
+  height: 180px;
+  width: 100%;
+}
+
+.item-lists ul {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.item-lists li {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr;
+  box-sizing: border-box;
+  height: 150px;
+  width: 100px;
+  margin: 15px 11px;
+  padding: 8px 8px;
+  border-radius: 5px;
+  background-color: #eee;
+  box-shadow: 0 0 3px #666;
+  transition: all .3s ease-in-out;
+}
+
+.item-lists li:hover {
+  box-shadow: 0 0 5px #1890ff;
+  transform: scale(1.1);
+}
+
+.item-lists li span:nth-child(1) {
+  display: inline-block;
+  font-size: 12px;
+  color: #999;
+  overflow: hidden;
+}
+
+.item-lists li span:nth-child(1)::before {
+  content: '题干:';
+  margin-right: 1em;
+  font-size: 12px;
+  color: #333;
+}
+
+.item-lists li span:nth-child(2) {
+  display: inline-block;
+  font-size: 12px;
+  color: #999;
+  overflow: hidden;
+}
+
+.item-lists li span:nth-child(2)::before {
+  content: '题型:';
+  margin-right: 1em;
+  font-size: 12px;
+  color: #333;
+}
+
+.item-lists li span:nth-child(3) {
+  display: inline-block;
+  font-size: 12px;
+  color: #999;
+  overflow: hidden;
+}
+
+.item-lists li span:nth-child(3)::before {
+  content: '分数:';
+  margin-right: 1em;
+  font-size: 12px;
+  color: #333;
+}
+
+.item-lists li span:nth-child(4) {
+  display: flex;
+}
+
+.item-lists li span:nth-child(4) img:nth-child(1) {
+  flex: 1;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* 没有考题提示文字 */
+.not-item-lists {
+  position: absolute;
+  top: 83px;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 14px;
-  margin: 0 15px;
+  color: #999;
+  pointer-events: none;
+}
+
+/* 编辑部分 */
+.new-item {
+  position: absolute;
+  bottom: 0;
+  height: 520px;
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  grid-template-columns: 1fr;
+  background-color: #eee;
 }
 
 
