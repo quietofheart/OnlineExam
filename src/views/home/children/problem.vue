@@ -8,29 +8,77 @@
         <!-- 顶部退出和文本 -->
         <div class="top-text">
           <p>新建考试</p>
-          <button @click="isShowNewFun">X</button>
+          <button @click="isShowNewFun('clear')">X</button>
         </div>
-        <!-- 输入新建部分 -->
-        <div class="input-exam">
-          <!-- 顶部进度条 -->
-          <ul class="Progress-bar">
-            <li class="Progress-item">
-              <span>1</span>
-              <p>考试描述</p>
-            </li>
-            <li class="Progress-item">
-              <span>2</span>
-              <p>考题设置</p>
-            </li>
-            <li class="Progress-item">
-              <span>3</span>
-              <p>操作设置</p>
-            </li>
-          </ul>
-        </div>
+        <!-- 顶部进度条 -->
+        <ul class="Progress-bar">
+          <li :class="{ 'success': isShowSuccessOne }" class="Progress-item one-item">
+            <span>1</span>
+            <p>考试描述</p>
+          </li>
+          <li class="one-bar"></li>
+          <li :class="[{ 'success': isShowSuccessTwo }, { 'successThree': isShowSuccessThree }]"
+            class="Progress-item two-item">
+            <span>2</span>
+            <p>考题设置</p>
+          </li>
+          <li class="two-bar"></li>
+          <li class="Progress-item three-item">
+            <span>3</span>
+            <p>操作设置</p>
+          </li>
+        </ul>
+        <!-- 输入新建第一部分 -->
+        <ul v-if="isShowOperationOne" class="input-exam">
+          <li id="input-one" :class="{ 'show-err': isShowErr[0] }">
+            <label for="exam-name">试卷名称:</label>
+            <input v-model="examName" type="text" id="exam-name">
+          </li>
+          <li id="input-two" :class="{ 'show-err': isShowErr[1] }">
+            <label for="exam-message">试卷简述:</label>
+            <input v-model="examMessage" type="text" id="exam-message">
+          </li>
+          <li id="input-three" :class="{ 'show-err': isShowErr[2] }">
+            <label for="exam-fraction">满分分数:</label>
+            <input v-model="examFraction" type="text" id="exam-fraction">
+          </li>
+          <li id="input-four" :class="{ 'show-err': isShowErr[3] }">
+            <label for="exam-time">答题时长:</label>
+            <input v-model="examTime" type="text" id="exam-time">
+          </li>
+          <li id="input-five" :class="{ 'show-err': isShowErr[4] }">
+            <label for="exam-type">所属学科:</label>
+            <input v-model="examType" type="text" id="exam-type">
+          </li>
+        </ul>
+        <!-- 输入新建第二部分 -->
+        <ul v-if="isShowOperationTwo" class="input-exam-two">
+          <li>
+            <span>单选题:</span>
+            
+          </li>
+        </ul>
+        <!-- 输入新建第三部分 -->
+        <ul v-if="isShowOperationThree" class="input-exam">
+          <li>
+            <label for="exam-name">试卷名称3:</label>
+            <input v-model="examName" type="text" id="exam-name">
+          </li>
+        </ul>
         <!-- 底部操作确认部分 -->
         <div class="submit-exam">
-          <button>确认创建</button>
+          <div v-if="isShowOperationOne" class="operation-one">
+            <button class="btn-gray" @click="isShowNewFun('clear')">取消创建</button>
+            <button class="btn-blue" @click="BtnGo(1)">下一步</button>
+          </div>
+          <div v-if="isShowOperationTwo" class="operation-two">
+            <button class="btn-gray" @click="BtnBack(1)">上一步</button>
+            <button class="btn-blue" @click="BtnGo(2)">下一步</button>
+          </div>
+          <div v-if="isShowOperationThree" class="operation-three">
+            <button class="btn-gray" @click="BtnBack(2)">上一步</button>
+            <button class="btn-blue" @click="BtnGo(3)">确认创建</button>
+          </div>
         </div>
       </div>
     </div>
@@ -107,17 +155,129 @@ export default {
   name: 'problem',
   data() {
     return {
-      isShowMain: false,
-      isShowNew: false,
-      exams: [],
+      isShowMain: false,// 是否显示表格
+      isShowNew: false,// 是否显示弹出框
+      isShowOperationOne: true,//是否显示底部操作确认第一部分
+      isShowOperationTwo: false,//是否显示底部操作确认第二部分
+      isShowOperationThree: false,//是否显示底部操作确认第三部分
+      isShowSuccessOne: false,// 是否显示第一个成功进度条样式
+      isShowSuccessTwo: false,// 是否显示第二个成功进度条样式
+      isShowSuccessThree: false,// 是否显示第三个成功进度条样式
+      isShowErr: [false, false, false, false, false],// 是否显示错误文本
+      examName: '',// 新建考试名
+      examMessage: '',// 新建考试描述
+      examFraction: '',// 新建考试分数
+      examTime: '',// 新建考试时间
+      examType: '',// 新建考试学科
+      ExamNameReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,12}$/,// 新建考试名正则
+      examMessageReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,20}$/,// 新建考试描述正则
+      examFractionReg: /^[1-9]{1,3}$/,// 新建考试分数正则
+      examTimeReg: /^[1-9]{1,3}$/,// 新建考试时间正则
+      examTypeReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,10}$/,// 新建考试学科正则
+      exams: [],// 考试列表
     }
   },
   methods: {
-    isShowNewFun() {
+    isShowNewFun(str) { // 动态显示弹出框
+      if (str === 'clear') {
+        this.examName = ''
+        this.examMessage = ''
+        this.examFraction = ''
+        this.examTime = ''
+        this.examType = ''
+        this.isShowErr = [false, false, false, false, false]
+      }
       this.isShowNew = !this.isShowNew
-    }
-  }
-  ,
+    },
+    BtnGo(n) { //弹出框下一步按钮事件
+      switch (n) {
+        case 1:
+          this.isShowOperationOne = false
+          this.isShowOperationTwo = true
+          this.isShowSuccessOne = true
+          // if (!this.ExamNameReg.test(this.examName)) {
+          //   this.isShowErr.splice(0, 1, true)
+          // } else {
+          //   this.isShowErr.splice(0, 1, false)
+          // }
+          // if (!this.examMessageReg.test(this.examMessage)) {
+          //   this.isShowErr.splice(1, 1, true)
+          // } else {
+          //   this.isShowErr.splice(1, 1, false)
+          // }
+          // if (!this.examFractionReg.test(this.examFraction)) {
+          //   this.isShowErr.splice(2, 1, true)
+          // } else {
+          //   this.isShowErr.splice(2, 1, false)
+          // }
+          // if (!this.examTimeReg.test(this.examTime)) {
+          //   this.isShowErr.splice(3, 1, true)
+          // } else {
+          //   this.isShowErr.splice(3, 1, false)
+          // }
+          // if (!this.examTypeReg.test(this.examType)) {
+          //   this.isShowErr.splice(4, 1, true)
+          // } else {
+          //   this.isShowErr.splice(4, 1, false)
+          // }
+          // if (this.isShowErr[0] === false && 
+          // this.isShowErr[1] === false && 
+          // this.isShowErr[2] === false && 
+          // this.isShowErr[3] === false && 
+          // this.isShowErr[4] === false) {
+          //   this.isShowOperationOne = false
+          //   this.isShowOperationTwo = true
+          //   this.isShowSuccessOne = true
+          // }
+          break
+        case 2:
+          this.isShowOperationTwo = false
+          this.isShowOperationThree = true
+          this.isShowSuccessTwo = true
+          this.isShowSuccessThree = true
+          break
+        case 3:
+          let obj = { // 获取输入内容
+            id: this.exams.length + 1,
+            name: this.examName,
+            message: this.examMessage,
+            fraction: this.examFraction,
+            author: localStorage.getItem('uN'),
+            type: this.examType,
+            time: this.examTime,
+            create: this.nowTime()
+          }
+          this.exams.push(obj)
+          let jsonStr = JSON.stringify(this.exams)
+          localStorage.setItem('exam', jsonStr)
+          // 添加完毕，调整弹出框样式
+          this.isShowOperationOne = true
+          this.isShowOperationThree = false
+          this.isShowSuccessOne = false
+          this.isShowSuccessTwo = false
+          this.isShowNewFun('clear')
+          this.isShowMain = true
+          break
+      }
+    },
+    BtnBack(n) { //弹出框上一步按钮事件
+      if (n === 1) {
+        this.isShowOperationTwo = false
+        this.isShowOperationOne = true
+        this.isShowSuccessOne = false
+      } else {
+        this.isShowOperationThree = false
+        this.isShowOperationTwo = true
+        this.isShowSuccessTwo = false
+        this.isShowSuccessThree = false
+      }
+    },
+    nowTime() { // 获取当前时间
+      let aData = new Date()
+      let dateValue = aData.getFullYear() + "-" + (aData.getMonth() + 1) + "-" + aData.getDate();
+      return dateValue
+    },
+  },
   // 生命周期钩子
   mounted() {
     if (localStorage.getItem('exam')) {
@@ -127,16 +287,8 @@ export default {
         this.exams.push(item)
       }
       this.isShowMain = true
-    } else {
-      let arr = []
-      let obj = { id: 1, name: 'JavaScript基础', message: '关于JavaScript基础内容的考试', fraction: 100, author: 'admin', type: '编程', time: 60, create: '2022/08/14' }
-      arr.push(obj)
-      arr.push(obj)
-      let jsonStr = JSON.stringify(arr)
-      localStorage.setItem('exam', jsonStr)
     }
-  }
-
+  },
 }
 </script>
 
@@ -148,9 +300,6 @@ export default {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 100%;
-  height: 100vh;
-  min-height: 960px;
   background-color: #f0f2f5;
 }
 
@@ -172,8 +321,11 @@ h2 {
   left: 0;
   right: 0;
   z-index: 999;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, .6);
 }
+
 /* 白底弹出框 */
 .exam-container {
   position: absolute;
@@ -187,6 +339,7 @@ h2 {
   box-shadow: 0 0 5px #333;
   overflow: hidden;
 }
+
 /* 顶部文本提示和退出按钮 */
 .top-text {
   height: 50px;
@@ -213,41 +366,254 @@ h2 {
 .top-text button:hover {
   color: crimson;
 }
-/* 中部输入框 */
-.input-exam{
-  min-height: 750px;
-}
+
 /* 进度条 */
-.Progress-bar{
+.Progress-bar {
   height: 50px;
   display: grid;
   justify-items: center;
   align-items: center;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
-.Progress-item{
-  background-color: #eee;
+
+.Progress-item {
   margin: 0 10px;
+  position: relative;
+  width: 99%;
+  text-align: center;
 }
-.Progress-item span{
+
+.Progress-item span {
   display: inline-block;
   height: 25px;
   width: 25px;
   border-radius: 50%;
-  background-color: #1890ff;
-  color: #fff;
+  background-color: #eee;
+  color: #999;
   box-sizing: border-box;
   font-size: 14px;
   text-align: center;
   padding: 5.5px;
 }
-.Progress-item p{
+
+.Progress-item p {
   display: inline-block;
   font-size: 14px;
+  letter-spacing: .5px;
+  margin-left: 5px;
+  color: #999;
 }
+
+/* 第一步 */
+.one-item span {
+  background-color: #1890ff;
+  color: #fff;
+}
+
+.one-item p {
+  color: #333;
+}
+
+/* 小横条 */
+.one-bar {
+  display: inline-block;
+  height: 1px;
+  width: 140%;
+  background-color: #eee;
+}
+
+.two-bar {
+  display: inline-block;
+  height: 1px;
+  width: 140%;
+  background-color: #eee;
+}
+
+/* 顶部进度条完成样式 */
+.success.one-item span,
+.success.two-item span {
+  background-color: #fff;
+  color: transparent;
+  background-image: url(@/assets/img/home/problem/success.svg);
+  background-size: 100%;
+  background-position: top left;
+}
+
+.success.one-item p,
+.success.two-item p {
+  color: #999;
+}
+
+.success.one-item~.one-bar,
+.success.two-item~.two-bar {
+  background-color: #1890ff;
+}
+
+.success.one-item~.two-item span,
+.success.two-item~.three-item span {
+  background-color: #1890ff;
+  color: #fff;
+}
+
+.success.one-item~.two-item p,
+.success.two-item~.three-item p {
+  color: #333;
+}
+
+.success.successThree span {
+  background-color: #fff !important;
+  color: transparent !important;
+  background-image: url(@/assets/img/home/problem/success.svg);
+  background-size: 100%;
+  background-position: top left;
+}
+
+.success.successThree p {
+  color: #999 !important;
+}
+
+/* 弹出框第一步内容 */
+.input-exam {
+  min-height: 700px;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+  position: relative;
+}
+
+.input-exam li {
+  width: 100%;
+  text-align: center;
+}
+
+.input-exam label {
+  font-size: 14px;
+  color: #333;
+}
+
+.input-exam input {
+  display: inline-block;
+  margin: 0 10px;
+  width: 40%;
+  height: 30px;
+  border: 1px solid #dee2e6;
+  background: none;
+  outline: none;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.input-exam input:focus {
+  border: none;
+  box-shadow: 0 0 3px #1890ff;
+}
+
+/* 第一步格式错误提示部分 */
+.show-err#input-one::after {
+  content: "请输入字母或数字或中文,最少一字符,最多十二字符";
+  position: absolute;
+  top: 13%;
+  color: red;
+  font-size: 14px;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+}
+
+.show-err#input-two::after {
+  content: "请输入字母或数字或中文,最少一字符,最多二十字符";
+  position: absolute;
+  top: 33%;
+  color: red;
+  font-size: 14px;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+}
+
+.show-err#input-three::after {
+  content: "请输入纯数字,最少一字符,最多三字符";
+  position: absolute;
+  top: 53%;
+  color: red;
+  font-size: 14px;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+}
+
+.show-err#input-four::after {
+  content: "请输入纯数字,最少一字符,最多三字符";
+  position: absolute;
+  top: 73%;
+  color: red;
+  font-size: 14px;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+}
+
+.show-err#input-five::after {
+  content: "请输入字母或数字或中文,最少一字符,最多十字符";
+  position: absolute;
+  top: 93%;
+  color: red;
+  font-size: 14px;
+  left: 50%;
+  width: 50%;
+  transform: translateX(-50%);
+}
+
+/* 弹出框第二步内容 */
+.input-exam-two {
+  min-height: 700px;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+  position: relative;
+}
+.input-exam-two span{
+  font-size: 14px;
+  margin: 0 15px;
+}
+
+
+/* 底部操作确认部分 */
+.submit-exam {
+  width: 100%;
+  height: 100%;
+  box-shadow: -1px 0 1px #333;
+}
+
+.btn-blue {
+  float: right;
+  font-size: 14px;
+  background-color: #1890ff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 10px;
+  margin: 5px 20px;
+  cursor: pointer;
+}
+
+.btn-gray {
+  float: left;
+  font-size: 14px;
+  background-color: #999;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 10px;
+  margin: 5px 20px;
+  cursor: pointer;
+}
+
 /* 表格容器 */
 .problem-table {
-  background-color: #fff;
+  background-color: #eee;
   position: absolute;
   top: 100px;
   left: 10vw;
@@ -325,7 +691,7 @@ h2 {
 
 .search input:focus~label {
   color: #1890ff;
-  background-color: #fff;
+  background-color: #eee;
   padding: 0 5px;
   transform: translate(5px, -130%);
   font-size: 14px;

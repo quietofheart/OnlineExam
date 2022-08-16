@@ -10,8 +10,8 @@
                 </li>
                 <li>基于Vue等技术栈开发的在线考试系统</li>
                 <li>
-                    <button>预览</button>
-                    <button class="btn">开始使用</button>
+                    <a href="https://github.com/quietofheart/OnlineExam">预览</a>
+                    <a href="https://github.com/quietofheart/OnlineExam/blob/master/README.md" class="btn">开始使用</a>
                 </li>
             </ul>
             <!-- 右侧旋转木马/轮播图 -->
@@ -162,28 +162,28 @@ h2 {
 }
 
 /* 左侧按钮 */
-button {
-    height: 30px;
+.top ul li a,.btn {
+    display: inline-block;
     border-radius: 5px;
     border: none;
-    padding: 7.5px;
+    padding: 7px;
     font-size: 14px;
-    line-height: 15px;
     background-color: #1781d2;
-    margin: 50px 20px 0px 20px;
+    margin: 40px 20px 0px 20px;
     color: #fff;
-    cursor: pointer;
-    transition: all .3s;
+    transition: all .3s ease-in-out;
     box-shadow: 0 0 2px #666;
+    text-decoration: none;
 }
 
-.btn {
+.top ul li .btn {
     background-color: #13d420;
 }
 
-button:hover {
-    transform: scale(1.2);
-    box-shadow: 0px 0px 3px #000;
+.top ul li a:hover{
+    transform: scale(1.1);
+    color: #362f2f;
+    background-color: #fff;
 }
 
 /* 轮播图部分 */

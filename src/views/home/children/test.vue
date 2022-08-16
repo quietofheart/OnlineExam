@@ -194,8 +194,14 @@ a {
 
 /* 如果没有考试 */
 .not-test {
-  font-size: 16px;
+  font-size: 20px;
   color: #666;
   text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: .5px;
+  pointer-events: none;
 }
 </style>
