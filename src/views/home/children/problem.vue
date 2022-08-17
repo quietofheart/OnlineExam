@@ -56,34 +56,94 @@
           <!-- 考题列表 -->
           <div class="item-lists" v-if="itemLists.length > 0">
             <ul>
-              <li v-for="(item, index) in itemLists">
+              <li @click="editItem(index)" v-for="(item, index) in itemLists">
                 <span>{{ item.name }}</span>
                 <span>{{ item.type }}</span>
                 <span>{{ item.fraction }}</span>
                 <span>
-                  <img @click="delItem(index)" src="@/assets/img/home/problem/del.svg" alt="">
+                  <img @click.stop="delItem(index)" src="@/assets/img/home/problem/del.svg" alt="">
                 </span>
               </li>
             </ul>
           </div>
           <!-- 错误文本提示 -->
-          <span v-else class="not-item-lists">暂无考题，请在下方输入内容来新建考题</span>
+          <span v-else class="not-item-lists">暂无考题，请点击下方新建按钮设置考题</span>
           <!-- 操作按钮 -->
           <div class="new-item">
-            <select>
-              <option value="1" selected>单选题</option>
-              <option value="2">多选题</option>
-              <option value="3">判断题</option>
-              <option value="4">填空题</option>
-            </select>
-            <div v-if="isShowNewItem">
-              <label for="item-name">题干:<input type="text" id="item-name"></label>
-              <input type="text">
-              <input type="text">
-              <input type="text">
-              <input type="text">
+            <!-- 顶部按钮  -->
+            <ul>
+              <li :class="{ 'active': isShowNewItem[0] }" @click="newExamItem('edit')">编辑</li>
+              <li :class="{ 'active': isShowNewItem[1] }" @click="newExamItem('radio')">新建单选题</li>
+              <li @click="newExamItem">新建多选题</li>
+              <li @click="newExamItem">新建判断题</li>
+              <li @click="newExamItem">新建填空题</li>
+            </ul>
+            <!-- 编辑考题按钮 -->
+            <div v-if="isShowNewItem[0]" class="edit-exam-item">
+              <!-- 题干 -->
+              <div>
+                <textarea v-model="examItemName" autofocus></textarea>
+              </div>
+              <!-- 分数 -->
+              <div>
+                <input type="text" id="item-fraction" v-model="examItemFraction">
+              </div>
+              <!-- 选项 -->
+              <div>
+                <input type="text" v-model="examItemOption[0]" placeholder="A">
+                <input type="text" v-model="examItemOption[1]" placeholder="B">
+                <input type="text" v-model="examItemOption[2]" placeholder="C">
+                <input type="text" v-model="examItemOption[3]" placeholder="D">
+              </div>
+              <!-- 正确答案 -->
+              <div>
+                <label for="A">A</label>
+                <input type="radio" name="answer" value="A" id="A" v-model="examItemAnswer">
+                <label for="B">B</label>
+                <input type="radio" name="answer" value="B" id="B" v-model="examItemAnswer">
+                <label for="C">C</label>
+                <input type="radio" name="answer" value="C" id="C" v-model="examItemAnswer">
+                <label for="D">D</label>
+                <input type="radio" name="answer" value="D" id="D" v-model="examItemAnswer">
+              </div>
+              <!-- 按钮 -->
+              <div>
+                <button @click="createExamItem('radio')">确认创建</button>
+              </div>
             </div>
-            <button>新建考题</button>
+            <!-- 新建单选题按钮 -->
+            <div class="radio-exam-item" v-if="isShowNewItem[1]">
+              <!-- 题干 -->
+              <div>
+                <textarea v-model="examItemName" autofocus></textarea>
+              </div>
+              <!-- 分数 -->
+              <div>
+                <input type="text" id="item-fraction" v-model="examItemFraction">
+              </div>
+              <!-- 选项 -->
+              <div>
+                <input type="text" v-model="examItemOption[0]" placeholder="A">
+                <input type="text" v-model="examItemOption[1]" placeholder="B">
+                <input type="text" v-model="examItemOption[2]" placeholder="C">
+                <input type="text" v-model="examItemOption[3]" placeholder="D">
+              </div>
+              <!-- 正确答案 -->
+              <div>
+                <label for="A">A</label>
+                <input type="radio" name="answer" value="A" id="A" v-model="examItemAnswer">
+                <label for="B">B</label>
+                <input type="radio" name="answer" value="B" id="B" v-model="examItemAnswer">
+                <label for="C">C</label>
+                <input type="radio" name="answer" value="C" id="C" v-model="examItemAnswer">
+                <label for="D">D</label>
+                <input type="radio" name="answer" value="D" id="D" v-model="examItemAnswer">
+              </div>
+              <!-- 按钮 -->
+              <div>
+                <button @click="createExamItem('radio')">确认创建</button>
+              </div>
+            </div>
           </div>
         </div>
         <!-- 输入新建第三部分 -->
@@ -184,15 +244,15 @@ export default {
   data() {
     return {
       isShowMain: false,// 是否显示表格
-      isShowNew: true,// 是否显示弹出框 11111
-      isShowOperationOne: false,//是否显示底部操作确认第一部分 11111
-      isShowOperationTwo: true,//是否显示底部操作确认第二部分 11111
+      isShowNew: false,// 是否显示弹出框
+      isShowOperationOne: true,//是否显示底部操作确认第一部分
+      isShowOperationTwo: false,//是否显示底部操作确认第二部分
       isShowOperationThree: false,//是否显示底部操作确认第三部分
       isShowSuccessOne: false,// 是否显示第一个成功进度条样式
       isShowSuccessTwo: false,// 是否显示第二个成功进度条样式
       isShowSuccessThree: false,// 是否显示第三个成功进度条样式
       isShowErr: [false, false, false, false, false],// 是否显示错误文本
-      isShowNewItem:true,
+      isShowNewItem: [false, false, false, false, false],// 是否显示新建考题或编辑考题按钮的内容
       examName: '',// 新建考试名
       examMessage: '',// 新建考试描述
       examFraction: '',// 新建考试分数
@@ -204,23 +264,12 @@ export default {
       examTimeReg: /^[1-9]{1,3}$/,// 新建考试时间正则
       examTypeReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,10}$/,// 新建考试学科正则
       exams: [],// 考试列表
-      itemLists: [{
-        name: '假设A=B',
-        type: '单选题',
-        fraction: 5,
-      }, {
-        name: '假设A=B2',
-        type: '单选题',
-        fraction: 5,
-      }, {
-        name: '假设A=B3',
-        type: '单选题',
-        fraction: 5,
-      }, {
-        name: '假设A=B4',
-        type: '单选题',
-        fraction: 5,
-      }],// 考题列表
+      itemLists: [],// 考题列表
+      examItemName: '', // 考题题干
+      examItemType: '',// 考题题型
+      examItemFraction: '',// 考题分数
+      examItemOption: [],// 考题选项列表
+      examItemAnswer: 'A', // 考题正确答案
     }
   },
   methods: {
@@ -325,6 +374,86 @@ export default {
     },
     delItem(index) { // 删除考题
       this.itemLists.splice(index, 1)
+    },
+    editItem(index) { // 编辑考题
+      let obj = this.itemLists[index]
+      if (obj.type === '单选题') {
+        this.examItemName = obj.name
+        this.examItemType = obj.type
+        this.examItemFraction = obj.fraction
+        this.examItemOption = obj.option
+        this.examItemAnswer = obj.answer
+        this.isShowNewItem.splice(1, 4, false)
+        this.isShowNewItem.splice(0, 1, true)
+      }
+    },
+    newExamItem(str) { // 新建单选题
+      switch (str) {
+        case 'edit':
+          if (this.itemLists.length === 0) {
+            alert('请点击按钮创建考题，并点击考题卡片上半部分进入编辑页面!')
+
+          } else {
+            alert('请点击需要编辑的考题卡片上半部分来进入编辑页面!')
+          }
+          break
+        case 'radio':
+          this.examItemName = ''
+          this.examItemType = ''
+          this.examItemFraction = ''
+          this.examItemOption = []
+          this.examItemAnswer = 'A'
+          this.isShowNewItem.splice(0, 5, false)
+          this.isShowNewItem.splice(1, 1, true)
+          break
+        default:
+          alert('抱歉，目前仅开放编辑和新建单选题!')
+      }
+    },
+    createExamItem(str) { // 确认创建考题
+      if (str === 'radio') {
+        let errStr = []
+        if (this.examItemName.length < 1) {
+          errStr.push('题干不能为空')
+        }
+        if (!this.examFractionReg.test(this.examItemFraction)) {
+          errStr.push('分数只能是1-3位数的纯数字')
+        }
+        if (this.examItemOption.length < 4) {
+          errStr.push('四个选项必须都设置内容')
+        } else {
+          for (let item of this.examItemOption) {
+            console.log(item);
+            if (item.length < 1) {
+              errStr.push('四个选项必须都设置内容')
+            }
+          }
+        }
+        if (errStr.length < 1) {
+          this.examItemType = '单选题'
+          let obj = {
+            name: this.examItemName,
+            type: this.examItemType,
+            fraction: this.examItemFraction,
+            option: this.examItemOption,
+            answer: this.examItemAnswer
+          }
+          this.itemLists.push(obj)
+          this.examItemName = ''
+          this.examItemType = ''
+          this.examItemFraction = ''
+          this.examItemOption = []
+          this.examItemAnswer = 'A'
+        } else {
+          let errMeg = ''
+          let errNnm = 1
+          for (let item of errStr) {
+            errMeg += '错误项:' + errNnm + '---' + item + ';' + '\n'
+            errNnm++
+          }
+          alert(errMeg)
+        }
+      }
     }
   },
   // 生命周期钩子
@@ -371,7 +500,9 @@ h2 {
   right: 0;
   z-index: 999;
   width: 100vw;
+  min-width: 1260px;
   height: 100vh;
+  min-height: 1080px;
   background-color: rgba(0, 0, 0, .6);
 }
 
@@ -379,6 +510,7 @@ h2 {
 .exam-container {
   position: absolute;
   top: 175px;
+
   left: 15%;
   width: 70%;
   min-width: 760px;
@@ -648,6 +780,7 @@ h2 {
   background-color: #eee;
   box-shadow: 0 0 3px #666;
   transition: all .3s ease-in-out;
+  cursor: pointer;
 }
 
 .item-lists li:hover {
@@ -659,13 +792,16 @@ h2 {
   display: inline-block;
   font-size: 12px;
   color: #999;
+  height: 24px;
   overflow: hidden;
 }
 
 .item-lists li span:nth-child(1)::before {
   content: '题干:';
   margin-right: 1em;
+  display: inline-block;
   font-size: 12px;
+  width: 27px;
   color: #333;
 }
 
@@ -699,14 +835,22 @@ h2 {
 
 .item-lists li span:nth-child(4) {
   display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
 
-.item-lists li span:nth-child(4) img:nth-child(1) {
+.item-lists li span:nth-child(4) img {
   flex: 1;
   display: inline-block;
   width: 20px;
   height: 20px;
   cursor: pointer;
+  transition: all .3s ease-in-out;
+}
+
+.item-lists li span:nth-child(4):hover img {
+  transform: scale(1.5);
 }
 
 /* 没有考题提示文字 */
@@ -726,13 +870,157 @@ h2 {
   bottom: 0;
   height: 520px;
   width: 100%;
-  display: grid;
-  justify-items: center;
-  align-items: center;
-  grid-template-columns: 1fr;
-  background-color: #eee;
 }
 
+/* 题型选择按钮部分 */
+.new-item ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  height: 50px;
+  background-color: #eee;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, .1);
+  box-shadow: 0 0 3px #eee;
+}
+
+.new-item ul li {
+  text-align: center;
+  font-size: 16px;
+  color: #999;
+  line-height: 50px;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+}
+
+.new-item ul li:hover {
+  color: #333;
+}
+
+.new-item ul li.active {
+  color: #fff;
+  background-color: #5c5c5c;
+}
+
+/* 考题按钮部分统一样式 */
+.edit-exam-item,
+.radio-exam-item {
+  height: 470px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+}
+
+.radio-exam-item div {
+  position: relative;
+  height: 50px;
+  width: 70%;
+}
+
+.radio-exam-item textarea,
+input {
+  resize: none;
+  font-family: '微软雅黑', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 2px #6c757d;
+  box-sizing: border-box;
+}
+
+#item-fraction {
+  height: 20px;
+  width: 40px;
+}
+
+.radio-exam-item div:nth-child(3) {
+  /* overflow: auto; */
+  height: 130px;
+  padding: 5px 50px;
+  border: 1px solid #eee;
+  box-sizing: border-box;
+}
+
+.radio-exam-item div:nth-child(3) input {
+  height: 20px;
+  margin: 5px 0;
+}
+
+.radio-exam-item div:nth-child(1):before {
+  content: '请输入题干:';
+  display: inline-block;
+  position: absolute;
+  transform: translateY(-150%);
+  font-size: 12px;
+  color: #999;
+}
+
+.radio-exam-item div:nth-child(2) {
+  height: 20px;
+}
+
+.radio-exam-item div:nth-child(2):before {
+  content: '请输入本题分数:';
+  display: inline-block;
+  position: absolute;
+  transform: translateY(-150%);
+  font-size: 12px;
+  color: #999;
+}
+
+.radio-exam-item div:nth-child(3):before {
+  content: '请输入选项:';
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  transform: translateY(-180%);
+  font-size: 12px;
+  color: #999;
+}
+
+.radio-exam-item div:nth-child(4) {
+  height: 20px;
+}
+
+.radio-exam-item div:nth-child(4):before {
+  content: '请选择正确答案对应的字母(A/B/C/D):';
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  transform: translateY(-180%);
+  font-size: 12px;
+  color: #999;
+}
+
+.radio-exam-item div:nth-child(4) label {
+  position: absolute;
+  top: 2px;
+}
+
+.radio-exam-item div:nth-child(4) input {
+  width: 20px;
+  height: 20px;
+  margin: 0 20px;
+  line-height: 20px;
+  border: none;
+  box-shadow: none;
+}
+
+.radio-exam-item div:nth-child(5) {
+  height: 30px;
+}
+
+.radio-exam-item div:nth-child(5) button {
+  height: 100%;
+  border: none;
+  background-color: #1890ff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
 /* 底部操作确认部分 */
 .submit-exam {
