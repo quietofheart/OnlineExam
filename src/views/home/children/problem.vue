@@ -82,33 +82,36 @@
             <div v-if="isShowNewItem[0]" class="edit-exam-item">
               <!-- 题干 -->
               <div>
+                <span>题干</span>
                 <textarea v-model="examItemName" autofocus></textarea>
-              </div>
-              <!-- 分数 -->
-              <div>
-                <input type="text" id="item-fraction" v-model="examItemFraction">
               </div>
               <!-- 选项 -->
               <div>
-                <input type="text" v-model="examItemOption[0]" placeholder="A">
-                <input type="text" v-model="examItemOption[1]" placeholder="B">
-                <input type="text" v-model="examItemOption[2]" placeholder="C">
-                <input type="text" v-model="examItemOption[3]" placeholder="D">
+                <p>选项A</p>
+                <textarea v-model="examItemOption[0]"></textarea>
+                <p>选项B</p>
+                <textarea v-model="examItemOption[1]"></textarea>
+                <p>选项C</p>
+                <textarea v-model="examItemOption[2]"></textarea>
+                <p>选项D</p>
+                <textarea v-model="examItemOption[3]"></textarea>
               </div>
               <!-- 正确答案 -->
               <div>
-                <label for="A">A</label>
-                <input type="radio" name="answer" value="A" id="A" v-model="examItemAnswer">
-                <label for="B">B</label>
-                <input type="radio" name="answer" value="B" id="B" v-model="examItemAnswer">
-                <label for="C">C</label>
-                <input type="radio" name="answer" value="C" id="C" v-model="examItemAnswer">
-                <label for="D">D</label>
-                <input type="radio" name="answer" value="D" id="D" v-model="examItemAnswer">
+                <span>点击小圆点选择正确答案的选项</span>
+                <input type="radio" name="answer" value="A" v-model="examItemAnswer">
+                <input type="radio" name="answer" value="B" v-model="examItemAnswer">
+                <input type="radio" name="answer" value="C" v-model="examItemAnswer">
+                <input type="radio" name="answer" value="D" v-model="examItemAnswer">
+              </div>
+              <!-- 分数 -->
+              <div>
+                <span>分数</span>
+                <input type="text" id="item-fraction" v-model="examItemFraction">
               </div>
               <!-- 按钮 -->
               <div>
-                <button @click="createExamItem('radio')">确认创建</button>
+                <button @click="editItemChange">确认更改</button>
               </div>
             </div>
             <!-- 新建单选题按钮 -->
@@ -147,10 +150,20 @@
           </div>
         </div>
         <!-- 输入新建第三部分 -->
-        <ul v-if="isShowOperationThree" class="input-exam">
+        <ul v-if="isShowOperationThree" class="input-exam-three">
           <li>
-            <label for="exam-name">试卷名称3:</label>
-            <input v-model="examName" type="text" id="exam-name">
+            <span>考试结束后是否允许考生查看得分?</span>
+            <label for="examScore">不允许</label>
+            <input v-model="examScore" type="radio" id="examScore" name="examScore" value="no">
+            <label for="examScore">允许</label>
+            <input v-model="examScore" type="radio" id="examScore" name="examScore" value="yes">
+          </li>
+          <li>
+            <span>考试结束后,已答错的考题是否允许考生查看正确答案?</span>
+            <label for="examAnswer">不允许</label>
+            <input v-model="examAnswer" type="radio" id="examAnswer" name="examAnswer" value="no">
+            <label for="examAnswer">允许</label>
+            <input v-model="examAnswer" type="radio" id="examAnswer" name="examAnswer" value="yes">
           </li>
         </ul>
         <!-- 底部操作确认部分 -->
@@ -179,8 +192,8 @@
           <button @click="isShowNewFun">新建考试</button>
         </div>
         <!-- 中间搜索 -->
-        <div class="search">
-          <input type="text" id="search">
+        <div class="search" :class="{ 'blur': isShowBlur }">
+          <input type="text" @input="searchExam(search)" v-model="search" @blur="isShowBlurFun">
           <label for="search">搜索</label>
         </div>
         <!-- 右侧操作 -->
@@ -211,8 +224,8 @@
             </tr>
           </thead>
           <!-- 表格主体 -->
-          <tbody class="exam-item">
-            <tr v-for="(item, index) in exams">
+          <tbody class="exam-item" v-if="isShowExamItem">
+            <tr v-for="(item, index) in this.exams">
               <td>{{ item.id }}</td>
               <td>{{ item.name }}</td>
               <td>{{ item.message }}</td>
@@ -245,6 +258,7 @@ export default {
     return {
       isShowMain: false,// 是否显示表格
       isShowNew: false,// 是否显示弹出框
+      isShowBlur: false, // 是否显示搜索框带内容的失去焦点样式
       isShowOperationOne: true,//是否显示底部操作确认第一部分
       isShowOperationTwo: false,//是否显示底部操作确认第二部分
       isShowOperationThree: false,//是否显示底部操作确认第三部分
@@ -253,6 +267,7 @@ export default {
       isShowSuccessThree: false,// 是否显示第三个成功进度条样式
       isShowErr: [false, false, false, false, false],// 是否显示错误文本
       isShowNewItem: [false, false, false, false, false],// 是否显示新建考题或编辑考题按钮的内容
+      isShowExamItem: true,//是否显示表格主体内容
       examName: '',// 新建考试名
       examMessage: '',// 新建考试描述
       examFraction: '',// 新建考试分数
@@ -260,16 +275,21 @@ export default {
       examType: '',// 新建考试学科
       ExamNameReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,12}$/,// 新建考试名正则
       examMessageReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,20}$/,// 新建考试描述正则
-      examFractionReg: /^[1-9]{1,3}$/,// 新建考试分数正则
-      examTimeReg: /^[1-9]{1,3}$/,// 新建考试时间正则
+      examFractionReg: /^[0-9]{1,3}$/,// 新建考试分数正则
+      examTimeReg: /^[0-9]{1,3}$/,// 新建考试时间正则
       examTypeReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,10}$/,// 新建考试学科正则
       exams: [],// 考试列表
       itemLists: [],// 考题列表
+      ItemChange: [],// 编辑改变的考题索引
       examItemName: '', // 考题题干
       examItemType: '',// 考题题型
       examItemFraction: '',// 考题分数
       examItemOption: [],// 考题选项列表
       examItemAnswer: 'A', // 考题正确答案
+      examScore: 'yes', // 考生是否可以查看得分
+      examAnswer: 'no', // 考生是否可以查看答错考题的正确答案
+      search: '',// 存储搜索栏输入的内容
+
     }
   },
   methods: {
@@ -280,71 +300,92 @@ export default {
         this.examFraction = ''
         this.examTime = ''
         this.examType = ''
+        this.examItemName = ''
+        this.examItemName = ''
+        this.examItemType = ''
+        this.examItemFraction = ''
+        this.examItemOption = []
+        this.examItemAnswer = 'A'
+        this.examScore = 'yes'
+        this.examAnswer = 'no'
         this.isShowErr = [false, false, false, false, false]
+        this.isShowNewItem = [false, false, false, false, false]
       }
       this.isShowNew = !this.isShowNew
     },
     BtnGo(n) { //弹出框下一步按钮事件
       switch (n) {
         case 1:
-          this.isShowOperationOne = false
-          this.isShowOperationTwo = true
-          this.isShowSuccessOne = true
-          // if (!this.ExamNameReg.test(this.examName)) {
-          //   this.isShowErr.splice(0, 1, true)
-          // } else {
-          //   this.isShowErr.splice(0, 1, false)
-          // }
-          // if (!this.examMessageReg.test(this.examMessage)) {
-          //   this.isShowErr.splice(1, 1, true)
-          // } else {
-          //   this.isShowErr.splice(1, 1, false)
-          // }
-          // if (!this.examFractionReg.test(this.examFraction)) {
-          //   this.isShowErr.splice(2, 1, true)
-          // } else {
-          //   this.isShowErr.splice(2, 1, false)
-          // }
-          // if (!this.examTimeReg.test(this.examTime)) {
-          //   this.isShowErr.splice(3, 1, true)
-          // } else {
-          //   this.isShowErr.splice(3, 1, false)
-          // }
-          // if (!this.examTypeReg.test(this.examType)) {
-          //   this.isShowErr.splice(4, 1, true)
-          // } else {
-          //   this.isShowErr.splice(4, 1, false)
-          // }
-          // if (this.isShowErr[0] === false && 
-          // this.isShowErr[1] === false && 
-          // this.isShowErr[2] === false && 
-          // this.isShowErr[3] === false && 
-          // this.isShowErr[4] === false) {
-          //   this.isShowOperationOne = false
-          //   this.isShowOperationTwo = true
-          //   this.isShowSuccessOne = true
-          // }
+          if (!this.ExamNameReg.test(this.examName)) {
+            this.isShowErr.splice(0, 1, true)
+          } else {
+            this.isShowErr.splice(0, 1, false)
+          }
+          if (!this.examMessageReg.test(this.examMessage)) {
+            this.isShowErr.splice(1, 1, true)
+          } else {
+            this.isShowErr.splice(1, 1, false)
+          }
+          if (!this.examFractionReg.test(this.examFraction)) {
+            this.isShowErr.splice(2, 1, true)
+          } else {
+            this.isShowErr.splice(2, 1, false)
+          }
+          if (!this.examTimeReg.test(this.examTime)) {
+            this.isShowErr.splice(3, 1, true)
+          } else {
+            this.isShowErr.splice(3, 1, false)
+          }
+          if (!this.examTypeReg.test(this.examType)) {
+            this.isShowErr.splice(4, 1, true)
+          } else {
+            this.isShowErr.splice(4, 1, false)
+          }
+          if (this.isShowErr[0] === false &&
+            this.isShowErr[1] === false &&
+            this.isShowErr[2] === false &&
+            this.isShowErr[3] === false &&
+            this.isShowErr[4] === false) {
+            this.isShowOperationOne = false
+            this.isShowOperationTwo = true
+            this.isShowSuccessOne = true
+          }
           break
         case 2:
-          this.isShowOperationTwo = false
-          this.isShowOperationThree = true
-          this.isShowSuccessTwo = true
-          this.isShowSuccessThree = true
+          if (this.itemLists.length > 0) {
+            let num = 0
+            for (let obj of this.itemLists) {
+              num += parseInt(obj.fraction)
+            }
+            if (num === parseInt(this.examFraction)) {
+              this.isShowOperationTwo = false
+              this.isShowOperationThree = true
+              this.isShowSuccessTwo = true
+              this.isShowSuccessThree = true
+            } else {
+              alert(`你设置的考试满分分数为${this.examFraction}, 但是你添加的考题分数一共为${num}`)
+            }
+          } else {
+            alert('必须设置一个以上的考题')
+          }
           break
         case 3:
           let obj = { // 获取输入内容
-            id: this.exams.length + 1,
+            id: parseInt(this.exams.length + 1),
             name: this.examName,
             message: this.examMessage,
-            fraction: this.examFraction,
+            fraction: parseInt(this.examFraction),
             author: localStorage.getItem('uN'),
             type: this.examType,
-            time: this.examTime,
-            create: this.nowTime()
+            time: parseInt(this.examTime),
+            create: this.nowTime(),
+            item: this.itemLists,
+            setting: { 'examScore': this.examScore, 'examAnswer': this.examAnswer }
           }
           this.exams.push(obj)
           let jsonStr = JSON.stringify(this.exams)
           localStorage.setItem('exam', jsonStr)
+          this.itemLists = []
           // 添加完毕，调整弹出框样式
           this.isShowOperationOne = true
           this.isShowOperationThree = false
@@ -378,6 +419,7 @@ export default {
     editItem(index) { // 编辑考题
       let obj = this.itemLists[index]
       if (obj.type === '单选题') {
+        this.ItemChange.splice(0, 1, index)
         this.examItemName = obj.name
         this.examItemType = obj.type
         this.examItemFraction = obj.fraction
@@ -387,7 +429,7 @@ export default {
         this.isShowNewItem.splice(0, 1, true)
       }
     },
-    newExamItem(str) { // 新建单选题
+    newExamItem(str) { // 编辑考题按钮和新建单选题按钮
       switch (str) {
         case 'edit':
           if (this.itemLists.length === 0) {
@@ -410,6 +452,27 @@ export default {
           alert('抱歉，目前仅开放编辑和新建单选题!')
       }
     },
+    editItemChange() { // 确认改变按钮
+      let index = this.ItemChange[0]
+      let obj = this.itemLists[index]
+      if (obj.type === '单选题') {
+        this.ItemChange.splice(1, 1, true)
+        let err = this.createExamItem('radio')
+        if (err !== false) {
+          alert(err)
+        } else {
+          let newObj = {
+            name: this.examItemName,
+            type: this.examItemType,
+            fraction: this.examItemFraction,
+            option: this.examItemOption,
+            answer: this.examItemAnswer
+          }
+          this.itemLists.splice(index, 1, newObj)
+          this.isShowNewItem.splice(0, 5, false)
+        }
+      }
+    },
     createExamItem(str) { // 确认创建考题
       if (str === 'radio') {
         let errStr = []
@@ -421,20 +484,24 @@ export default {
         }
         if (this.examItemOption.length < 4) {
           errStr.push('四个选项必须都设置内容')
+          console.log('1');
         } else {
           for (let item of this.examItemOption) {
-            console.log(item);
-            if (item.length < 1) {
+            if (item == undefined) {
               errStr.push('四个选项必须都设置内容')
+              break
+            } else if (item.length < 1) {
+              errStr.push('四个选项必须都设置内容')
+              break
             }
           }
         }
-        if (errStr.length < 1) {
+        if (errStr.length < 1 && this.ItemChange[1] !== true) {
           this.examItemType = '单选题'
           let obj = {
             name: this.examItemName,
             type: this.examItemType,
-            fraction: this.examItemFraction,
+            fraction: parseInt(this.examItemFraction),
             option: this.examItemOption,
             answer: this.examItemAnswer
           }
@@ -444,6 +511,17 @@ export default {
           this.examItemFraction = ''
           this.examItemOption = []
           this.examItemAnswer = 'A'
+        } else if (this.ItemChange[1] === true) {
+          if (errStr.length > 0) {
+            let errMeg = ''
+            let errNnm = 1
+            for (let item of errStr) {
+              errMeg += '错误项:' + errNnm + '---' + item + ';' + '\n'
+              errNnm++
+            }
+            return errMeg
+          }
+          return false
         } else {
           let errMeg = ''
           let errNnm = 1
@@ -453,19 +531,76 @@ export default {
           }
           alert(errMeg)
         }
+      } else if (str === 'edit') {
+
       }
-    }
+    },
+    showExam(str, ...arg) { // 渲染考试列表
+      if (str === 'one') {
+        if (localStorage.getItem('exam')) {
+          let exams = localStorage.getItem('exam')
+          let jsonArr = JSON.parse(exams)
+          for (let item of jsonArr) {
+            this.exams.push(item)
+          }
+          this.isShowMain = true
+        }
+      } else if (str === 'search') {
+        let searchList = []
+        let searchListOld = []
+        let strArr = arg[0].split('')
+        console.log(strArr);
+        for (let exam of this.exams) {
+          searchListOld.push(exam.id)
+          searchListOld.push(exam.name)
+          searchListOld.push(exam.message)
+          searchListOld.push(exam.type)
+          searchListOld.push(exam.author)
+          console.log(searchListOld);
+          for (let str of strArr) {
+            console.log(str);
+            if (searchListOld.indexOf(str) !== -1) {
+              searchList.push(exam)
+              console.log(`找到符合搜索条件的考试项目${exam.name}`);
+            }
+          }
+          searchListOld = []
+        }
+        if (searchList.length < 1) {
+          console.log('没有找到符合条件的项目,关闭列表显示');
+          this.isShowExamItem = false
+        } else {
+          this.exams = []
+          for (let exam of searchList) {
+            this.exams.push(exam)
+            console.log('清空考试列表,重新填写成符合搜索的考试列表');
+          }
+          this.isShowExamItem = true
+        }
+      }
+    },
+    searchExam(str) { // 搜索框内容处理
+      if (str.length > 0 && this.exams.length > 0) {
+        this.showExam('search', this.search)
+        console.log('两个长度都大于0');
+      } else {
+        this.exams = []
+        this.showExam('one')
+        this.isShowExamItem = true
+        console.log('两个长度至少有一项不大于0,拒绝本次搜索需求,显示全部考试列表');
+      }
+    },
+    isShowBlurFun() { // 判断搜索框是否有内容来显示不同样式
+      if (this.search.length > 0) {
+        this.isShowBlur = true
+      } else {
+        this.isShowBlur = false
+      }
+    },
   },
   // 生命周期钩子
   mounted() {
-    if (localStorage.getItem('exam')) {
-      let exams = localStorage.getItem('exam')
-      let jsonArr = JSON.parse(exams)
-      for (let item of jsonArr) {
-        this.exams.push(item)
-      }
-      this.isShowMain = true
-    }
+    this.showExam('one')
   },
 }
 </script>
@@ -510,7 +645,6 @@ h2 {
 .exam-container {
   position: absolute;
   top: 175px;
-
   left: 15%;
   width: 70%;
   min-width: 760px;
@@ -913,6 +1047,94 @@ h2 {
   align-items: center;
 }
 
+/* 编辑考题部分样式 */
+.edit-exam-item div {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.edit-exam-item div span {
+  margin-right: 1em;
+  font-size: 14px;
+  color: #999;
+}
+
+.edit-exam-item div p {
+  position: absolute;
+  top: 0;
+  font-size: 14px;
+  color: #999;
+}
+
+.edit-exam-item div p:nth-child(1) {
+  left: 20%;
+  transform: translateX(-50%);
+}
+
+.edit-exam-item div p:nth-child(3) {
+  left: 40%;
+  transform: translateX(-50%);
+}
+
+.edit-exam-item div p:nth-child(5) {
+  left: 60%;
+  transform: translateX(-50%);
+}
+
+.edit-exam-item div p:nth-child(7) {
+  left: 80%;
+  transform: translateX(-50%);
+}
+
+.edit-exam-item div:nth-child(2) textarea {
+  height: 100px;
+  width: 20%;
+}
+
+.edit-exam-item div textarea {
+  resize: none;
+  font-family: '微软雅黑', 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  height: 100px;
+  width: 500px;
+  border: 1px solid #999;
+  outline: none;
+}
+
+.edit-exam-item div:nth-child(3) {
+  position: relative;
+  width: 85%;
+  align-items: flex-start;
+}
+
+.edit-exam-item div:nth-child(3) span {
+  position: absolute;
+  top: -1em;
+  pointer-events: none;
+}
+
+.edit-exam-item div:nth-child(3) input {
+  flex: 1;
+  height: 20px;
+  width: 20px;
+  border: none;
+  box-shadow: none;
+  background-color: #28a745;
+}
+
+.edit-exam-item div button {
+  height: 30px;
+  border: none;
+  background-color: #1890ff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* 新建单选题本部分样式 */
 .radio-exam-item div {
   position: relative;
   height: 50px;
@@ -1022,6 +1244,62 @@ input {
   cursor: pointer;
 }
 
+
+/* 弹出框第三步内容 */
+.input-exam-three {
+  min-height: 700px;
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  grid-template-columns: 1fr;
+}
+
+.input-exam-three li {
+  position: relative;
+  height: 50px;
+}
+
+.input-exam-three li span {
+  font-size: 14px;
+  color: #666;
+  pointer-events: none;
+}
+
+.input-exam-three li label:nth-child(2) {
+  position: absolute;
+  font-size: 12px;
+  color: #999;
+  top: 20px;
+  left: 30%;
+}
+
+.input-exam-three li label:nth-child(4) {
+  position: absolute;
+  font-size: 12px;
+  color: #999;
+  top: 20px;
+  left: 70%;
+}
+
+.input-exam-three li input:nth-child(3) {
+  position: absolute;
+  top: 35px;
+  left: 31%;
+  box-shadow: none;
+  height: 20px;
+  width: 20px;
+}
+
+.input-exam-three li input:nth-child(5) {
+  position: absolute;
+  top: 35px;
+  left: 69%;
+  box-shadow: none;
+  height: 20px;
+  width: 20px;
+}
+
 /* 底部操作确认部分 */
 .submit-exam {
   width: 100%;
@@ -1120,7 +1398,7 @@ input {
   position: absolute;
   font-size: 12px;
   right: 165px;
-  top: 10px;
+  top: 9px;
   pointer-events: none;
   color: #999;
   transition: all .3s ease-in-out;
@@ -1128,7 +1406,6 @@ input {
 
 .search input:focus {
   border: 1px solid #1890ff;
-  transform: scale(1.1);
 }
 
 .search input:focus~label {
@@ -1136,7 +1413,17 @@ input {
   background-color: #eee;
   padding: 0 5px;
   transform: translate(5px, -130%);
-  font-size: 14px;
+}
+
+.search.blur input {
+  border: 1px solid #1890ff;
+}
+
+.search.blur input~label {
+  color: #1890ff;
+  background-color: #eee;
+  padding: 0 5px;
+  transform: translate(5px, -130%);
 }
 
 /* 右侧操作 */
