@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <h2>点击左侧的创建按钮可以创建新的考试</h2>
-    <!-- 弹出框 -->
+    <!-- 新建考试弹出框 -->
     <div v-if="isShowNew" class="new-exam">
       <!-- 主体背景容器 -->
       <div class="exam-container">
@@ -225,7 +225,7 @@
           </thead>
           <!-- 表格主体 -->
           <tbody class="exam-item" v-if="isShowExamItem">
-            <tr v-for="(item, index) in this.exams">
+            <tr v-for="(item, index) in this.exams[searchExamsIndex]">
               <td>{{ item.id }}</td>
               <td>{{ item.name }}</td>
               <td>{{ item.message }}</td>
@@ -245,6 +245,13 @@
       </div>
       <!-- 表脚部分 -->
       <div class="table-footer">
+
+      </div>
+    </div>
+    <!-- 考试列表按钮弹出框 -->
+    <div class="message-exam" >
+      <!-- 白色内容框 -->
+      <div class="message-exam-white">
 
       </div>
     </div>
@@ -278,7 +285,8 @@ export default {
       examFractionReg: /^[0-9]{1,3}$/,// 新建考试分数正则
       examTimeReg: /^[0-9]{1,3}$/,// 新建考试时间正则
       examTypeReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,10}$/,// 新建考试学科正则
-      exams: [],// 考试列表
+      exams: [[], []],// 考试列表
+      searchExamsIndex: 0, //通过搜索决定显示第一个原始列表还是第二个匹配的列表
       itemLists: [],// 考题列表
       ItemChange: [],// 编辑改变的考题索引
       examItemName: '', // 考题题干
@@ -371,7 +379,7 @@ export default {
           break
         case 3:
           let obj = { // 获取输入内容
-            id: parseInt(this.exams.length + 1),
+            id: parseInt(this.exams[0].length + 1),
             name: this.examName,
             message: this.examMessage,
             fraction: parseInt(this.examFraction),
@@ -382,8 +390,8 @@ export default {
             item: this.itemLists,
             setting: { 'examScore': this.examScore, 'examAnswer': this.examAnswer }
           }
-          this.exams.push(obj)
-          let jsonStr = JSON.stringify(this.exams)
+          this.exams[0].push(obj)
+          let jsonStr = JSON.stringify(this.exams[0])
           localStorage.setItem('exam', jsonStr)
           this.itemLists = []
           // 添加完毕，调整弹出框样式
@@ -535,59 +543,60 @@ export default {
 
       }
     },
+    searchExam(str) { // 搜索框内容处理
+      if (str.length > 0 && this.exams[0].length > 0) {
+        if (this.search.length < 20) {
+          this.showExam('search', this.search)
+        } else {
+          alert('查询字符长度不能大于二十')
+          this.search = this.search.slice(0, 19)
+        }
+      } else {
+        this.exams[0] = []
+        this.showExam('one')
+        this.isShowExamItem = true
+      }
+    },
     showExam(str, ...arg) { // 渲染考试列表
-      if (str === 'one') {
+      if (str === 'one') { //说明是正常显示，直接获取然后显示
         if (localStorage.getItem('exam')) {
           let exams = localStorage.getItem('exam')
           let jsonArr = JSON.parse(exams)
           for (let item of jsonArr) {
-            this.exams.push(item)
+            this.exams[0].push(item)
           }
+          this.searchExamsIndex = 0
           this.isShowMain = true
         }
-      } else if (str === 'search') {
-        let searchList = []
-        let searchListOld = []
-        let strArr = arg[0].split('')
-        console.log(strArr);
-        for (let exam of this.exams) {
-          searchListOld.push(exam.id)
-          searchListOld.push(exam.name)
-          searchListOld.push(exam.message)
-          searchListOld.push(exam.type)
-          searchListOld.push(exam.author)
-          console.log(searchListOld);
-          for (let str of strArr) {
-            console.log(str);
-            if (searchListOld.indexOf(str) !== -1) {
-              searchList.push(exam)
-              console.log(`找到符合搜索条件的考试项目${exam.name}`);
-            }
+      } else if (str === 'search') { //说明是在搜索关键字，因此需要进行处理然后再显示指定内容
+        let strArr = arg[0].split('') //将搜索关键词拆分成单个字符一项的数组
+        let index = 0
+        for (let str of strArr) { //定义一个正则来处理关键词中的特殊字符
+          let reg = /[\.\^\$\+\{\}\*\?\[\]\/\\]+/g
+          if (reg.test(str)) {
+            strArr.splice(index, 1)
+          } else {
+            index++
           }
-          searchListOld = []
         }
-        if (searchList.length < 1) {
-          console.log('没有找到符合条件的项目,关闭列表显示');
+        this.exams[1] = []
+        for (let exam of this.exams[0]) { //遍历获取每一项考试
+          let items = null
+          items = exam.id + exam.name + exam.message + exam.type + exam.author
+          strArr.some((item) => { //遍历关键词对比是否根考试关键词字符串匹配
+            let reg = new RegExp(item + "+", "gi")
+            if (reg.test(items)) {
+              this.exams[1].push(exam) //匹配表示找到关键词，则添加到exams第二列表中
+              return true
+            }
+          })
+        }
+        if (this.exams[1].length < 1) {
           this.isShowExamItem = false
         } else {
-          this.exams = []
-          for (let exam of searchList) {
-            this.exams.push(exam)
-            console.log('清空考试列表,重新填写成符合搜索的考试列表');
-          }
+          this.searchExamsIndex = 1
           this.isShowExamItem = true
         }
-      }
-    },
-    searchExam(str) { // 搜索框内容处理
-      if (str.length > 0 && this.exams.length > 0) {
-        this.showExam('search', this.search)
-        console.log('两个长度都大于0');
-      } else {
-        this.exams = []
-        this.showExam('one')
-        this.isShowExamItem = true
-        console.log('两个长度至少有一项不大于0,拒绝本次搜索需求,显示全部考试列表');
       }
     },
     isShowBlurFun() { // 判断搜索框是否有内容来显示不同样式
@@ -627,7 +636,8 @@ h2 {
 }
 
 /* 弹出框 */
-.new-exam {
+.new-exam,
+.message-exam {
   position: absolute;
   top: -50px;
   bottom: 0;
@@ -1341,7 +1351,7 @@ input {
   min-width: 960px;
   min-height: 760px;
   border-radius: 5px;
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* 表头容器 */
@@ -1553,18 +1563,23 @@ input {
 }
 
 .exam-item tr td:nth-child(9) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-right: 1px solid #dee2e6;
 }
 
 .exam-item tr td button {
+  flex: 1;
   background-color: #28a745;
   color: #fff;
-  padding: 7px 10px;
-  margin-right: 10px;
+  padding: 5px 2px;
+  margin: 0 3px;
+  height: 30px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: .5px;
 }
 
@@ -1578,6 +1593,20 @@ input {
   color: #666;
   letter-spacing: .5px;
   pointer-events: none;
+}
+
+/* 考试列表按钮弹出框 */
+
+/* 白色内容框 */
+.message-exam-white {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  min-width: 500px;
+  height: 760px;
+  background-color: #6c757d;
 }
 
 /* 表脚部分 */
