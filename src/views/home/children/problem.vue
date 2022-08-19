@@ -225,7 +225,7 @@
           </thead>
           <!-- 表格主体 -->
           <tbody class="exam-item" v-if="isShowExamItem">
-            <tr v-for="(item, index) in this.exams[searchExamsIndex]">
+            <tr v-for="item in this.exams[searchExamsIndex]">
               <td>{{ item.id }}</td>
               <td>{{ item.name }}</td>
               <td>{{ item.message }}</td>
@@ -235,8 +235,8 @@
               <td>{{ item.type }}</td>
               <td>{{ item.create }}</td>
               <td>
-                <button>详情</button>
-                <button>编辑</button>
+                <button @click="editExam('details', item.id)">详情</button>
+                <button @click="editExam('edit', item.id)">编辑</button>
               </td>
             </tr>
           </tbody>
@@ -249,10 +249,57 @@
       </div>
     </div>
     <!-- 考试列表按钮弹出框 -->
-    <div class="message-exam" >
+    <div v-if="isShowExam" class="message-exam">
       <!-- 白色内容框 -->
       <div class="message-exam-white">
-
+        <!-- 顶部退出和文本 -->
+        <div class="top-text">
+          <p v-if="isShowExamEdit">考试编辑</p>
+          <p v-else>考试详情</p>
+          <button @click="isShowNewFun('back')">X</button>
+        </div>
+        <!-- 考试编辑 -->
+        <div v-if="isShowExamEdit" data-exam-edit>
+          666
+        </div>
+        <!-- 考试详情  -->
+        <div v-else data-exam-details>
+          <ul>
+            <li>考试序号</li>
+            <li>试卷名称</li>
+            <li>描述信息</li>
+            <li>考试总分</li>
+            <li>考试限时</li>
+            <li>考试学科</li>
+            <li>创建用户</li>
+            <li>创建时间</li>
+            <li>考题列表</li>
+            <li>考试设置</li>
+          </ul>
+          <ul>
+            <li>{{ temporaryStorageExam.id }}</li>
+            <li>{{ temporaryStorageExam.name }}</li>
+            <li>{{ temporaryStorageExam.message }}</li>
+            <li>{{ temporaryStorageExam.fraction }}</li>
+            <li>{{ temporaryStorageExam.time }}</li>
+            <li>{{ temporaryStorageExam.type }}</li>
+            <li>{{ temporaryStorageExam.author }}</li>
+            <li>{{ temporaryStorageExam.create }}</li>
+            <li>
+              <ul v-for="item in temporaryStorageExam.item">
+                <li>题干：{{ item.name }}</li>
+                <li>题型：{{ item.type }}</li>
+                <li>分数：{{ item.fraction }}</li>
+                <li>选项：{{ item.option }}</li>
+                <li>答案：{{ item.answer }}</li>
+              </ul>
+            </li>
+            <li>
+              <p>考试结束后是否允许考生查看得分? {{ temporaryStorageExam.setting.examScore }}</p>
+              <p>考试结束后,已答错的考题是否允许考生查看正确答案? {{ temporaryStorageExam.setting.examAnswer }}</p>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -275,6 +322,8 @@ export default {
       isShowErr: [false, false, false, false, false],// 是否显示错误文本
       isShowNewItem: [false, false, false, false, false],// 是否显示新建考题或编辑考题按钮的内容
       isShowExamItem: true,//是否显示表格主体内容
+      isShowExam: false,//是否显示考试列表弹出框 //
+      isShowExamEdit: false, //是否是考试列表编辑模式
       examName: '',// 新建考试名
       examMessage: '',// 新建考试描述
       examFraction: '',// 新建考试分数
@@ -297,7 +346,7 @@ export default {
       examScore: 'yes', // 考生是否可以查看得分
       examAnswer: 'no', // 考生是否可以查看答错考题的正确答案
       search: '',// 存储搜索栏输入的内容
-
+      temporaryStorageExam: '',// 暂存需要显示的考试
     }
   },
   methods: {
@@ -318,8 +367,12 @@ export default {
         this.examAnswer = 'no'
         this.isShowErr = [false, false, false, false, false]
         this.isShowNewItem = [false, false, false, false, false]
+        this.isShowNewFun()
+      } else if (str === 'back') {
+        this.isShowExam = false
+      } else {
+        this.isShowNew = !this.isShowNew
       }
-      this.isShowNew = !this.isShowNew
     },
     BtnGo(n) { //弹出框下一步按钮事件
       switch (n) {
@@ -606,6 +659,20 @@ export default {
         this.isShowBlur = false
       }
     },
+    editExam(str, id) { //编辑考题或者查看考题详情
+      if (str === 'details') { //详情页面处理
+        this.exams[0].some(item => {
+          if (item.id === id) {
+            this.temporaryStorageExam = item
+          }
+        })
+        this.isShowExam = true
+        this.isShowExamEdit = false
+      } else if (str === 'edit') { //编辑考题页面处理
+        this.isShowExam = true
+        this.isShowExamEdit = true
+      }
+    }
   },
   // 生命周期钩子
   mounted() {
@@ -1595,18 +1662,86 @@ input {
   pointer-events: none;
 }
 
-/* 考试列表按钮弹出框 */
-
-/* 白色内容框 */
+/* 考试列表按钮白色内容框 */
 .message-exam-white {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70%;
-  min-width: 500px;
+  width: 760px;
   height: 760px;
-  background-color: #6c757d;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+[data-exam-details] {
+  height: calc(100% - 50px);
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+}
+
+/* 左边文本区域 */
+
+[data-exam-details]>ul{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: #eee;
+  border: 1px solid #b1b6bc;
+}
+
+[data-exam-details]>ul>li{
+  flex:1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  width: 100%;
+  border: 1px solid #b1b6bc;
+}
+
+[data-exam-details]>ul>li:nth-child(9){
+  flex:10;
+}
+
+[data-exam-details]>ul>li:nth-child(10){
+  font-size: 12px;
+}
+
+/* 右边数据区域 */
+[data-exam-details]>ul:nth-child(2){
+  background-color: #fff;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9){
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  max-height: 365px;
+  overflow: auto;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 200px;
+  width: 565px;
+  margin: 10px 10px;
+  padding: 10px  10px;
+  box-shadow: 0 0 3px #000;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul>li{
+  flex: 1;
+  font-size: 12px;
 }
 
 /* 表脚部分 */
