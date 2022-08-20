@@ -272,67 +272,94 @@
           </ul>
           <!-- 右侧 -->
           <ul>
+            <!-- 考试名 -->
             <li>
-              <label for="temporaryStorageExam.name">{{ temporaryStorageExam.name }}</label>
-              <input type="text" id="temporaryStorageExam.name">
+              <span>原内容：{{ temporaryStorageExam.name }}</span>
+              <input type="text" v-model="editExamText[0]" @focus="editExam('name')" @blur="editExam('name')">
             </li>
+            <!-- 考试描述 -->
             <li>
-              <label for="temporaryStorageExam.message">{{ temporaryStorageExam.message }}</label>
-              <input type="text" id="temporaryStorageExam.message">
+              <span>原内容：{{ temporaryStorageExam.message }}</span>
+              <input type="text" v-model="editExamText[1]" @focus="editExam('message')" @blur="editExam('message')">
             </li>
+            <!-- 考试分数 -->
             <li>
-              <label for="temporaryStorageExam.fraction">{{ temporaryStorageExam.fraction }}</label>
-              <input type="text" id="temporaryStorageExam.fraction">
+              <span>原内容：{{ temporaryStorageExam.fraction }}</span>
+              <input type="text" v-model="editExamText[2]" @focus="editExam('fraction')" @blur="editExam('fraction')">
             </li>
+            <!-- 考试限时  -->
             <li>
-              <label for="temporaryStorageExam.time">{{ temporaryStorageExam.time }}</label>
-              <input type="text" id="temporaryStorageExam.time">
+              <span>原内容：{{ temporaryStorageExam.time }}</span>
+              <input type="text" v-model="editExamText[3]" @focus="editExam('time')" @blur="editExam('time')">
             </li>
+            <!-- 考试学科  -->
             <li>
-              <label for="temporaryStorageExam.type">{{ temporaryStorageExam.type }}</label>
-              <input type="text" id="temporaryStorageExam.type">
+              <span>原内容：{{ temporaryStorageExam.type }}</span>
+              <input type="text" v-model="editExamText[4]" @focus="editExam('type')" @blur="editExam('type')">
             </li>
+            <!-- 考题列表  -->
             <li>
-              <ul v-for="item in temporaryStorageExam.item">
+              <ul v-for="(item, index) in temporaryStorageExam.item">
                 <li>
-                  <p>题干：</p>{{ item.name }}
+                  <p>原题干内容：</p>{{ item.name }}
+                  <input type="text" v-model="editExamText[5][0]" @focus="editExam('itemName')"
+                    @blur="editExam('itemName')">
                 </li>
                 <li>
-                  <p>题型：</p>{{ item.type }}
+                  <p>原题型：</p>{{ item.type }}
+                  <input type="text" v-model="editExamText[5][1]">
                 </li>
                 <li>
-                  <p>分数：</p>{{ item.fraction }}
+                  <p>原分数：</p>{{ item.fraction }}
+                  <input type="text" v-model="editExamText[5][2]" @focus="editExam('itemFraction')"
+                    @blur="editExam('itemFraction')">
                 </li>
                 <li>
-                  <p>选项</p>
+                  <p>原选项</p>
                   <span>
                     <p>A：</p>{{ item.option[0] }}
+                    <input type="text" v-model="editExamText[5][3][0]" @focus="editExam('itemOption1')"
+                      @blur="editExam('itemOption1')">
                   </span>
                   <span>
                     <p>B：</p>{{ item.option[1] }}
+                    <input type="text" v-model="editExamText[5][3][1]" @focus="editExam('itemOption2')"
+                      @blur="editExam('itemOption2')">
                   </span>
                   <span>
                     <p>C：</p>{{ item.option[2] }}
+                    <input type="text" v-model="editExamText[5][3][2]" @focus="editExam('itemOption3')"
+                      @blur="editExam('itemOption3')">
                   </span>
                   <span>
                     <p>D：</p>{{ item.option[3] }}
+                    <input type="text" v-model="editExamText[5][3][3]" @focus="editExam('itemOption4')"
+                      @blur="editExam('itemOption4')">
                   </span>
                 </li>
                 <li>
-                  <p>答案：</p>{{ item.answer }}
-                </li>
-                <li>
-
+                  <p>原答案：</p>{{ item.answer }}
+                  <input type="text" v-model="editExamText[5][4]" @focus="editExam('itemAnswer')"
+                    @blur="editExam('itemAnswer')">
                 </li>
               </ul>
             </li>
+            <!-- 考试设置区域 -->
             <li>
-              <p v-if="temporaryStorageExam.setting.examScore === 'yes'">允许考生查看得分</p>
-              <p v-else class="blackText">不允许考生查看得分</p>
-              <p v-if="temporaryStorageExam.setting.examAnswer === 'no'">不允许考生查看正确答案</p>
-              <p v-else class="blackText">允许考生查看正确答案</p>
-              <button @click="delExam(temporaryStorageExam.id)">删除考试</button>
-              <button>确认编辑</button>
+              <div>
+                <p :class="{ 'active': isShowActive[0] }" @click="editExam('active', 1)">允许查看得分</p>
+                <p :class="{ 'active': isShowActive[1] }" @click="editExam('active', 2)">不允许查看得分</p>
+              </div>
+              <div>
+                <p :class="{ 'active': isShowActive[2] }" @click="editExam('active', 3)">不允许查看正确答案</p>
+                <p :class="{ 'active': isShowActive[3] }" @click="editExam('active', 4)">允许查看正确答案</p>
+              </div>
+              <div>
+                <button @click="delExam(temporaryStorageExam.id)">删除考试</button>
+              </div>
+              <div>
+                <button>确认更改</button>
+              </div>
             </li>
           </ul>
         </div>
@@ -422,11 +449,30 @@ export default {
       isShowExamItem: true,//是否显示表格主体内容
       isShowExam: false,//是否显示考试列表弹出框 //
       isShowExamEdit: false, //是否是考试列表编辑模式
+      isShowActive: [false, false, false, false], //动态绑定active类
       examName: '',// 新建考试名
       examMessage: '',// 新建考试描述
       examFraction: '',// 新建考试分数
       examTime: '',// 新建考试时间
       examType: '',// 新建考试学科
+      editExamText: [  //编辑考试暂存文本列表
+        "点击这里填写新内容(不填默认为原内容)",
+        "点击这里填写新内容(不填默认为原内容)",
+        "点击这里填写新内容(不填默认为原内容)",
+        "点击这里填写新内容(不填默认为原内容)",
+        "点击这里填写新内容(不填默认为原内容)",
+        [
+          "点击这里填写新内容(不填默认为原内容)",
+          "此项暂不支持修改",
+          "点击这里填写新内容(不填默认为原内容)",
+          [
+            "点击这里填写新内容(不填默认为原内容)",
+            "点击这里填写新内容(不填默认为原内容)",
+            "点击这里填写新内容(不填默认为原内容)",
+            "点击这里填写新内容(不填默认为原内容)"
+          ],
+          "点击这里填写新内容(不填默认为原内容)"
+        ], []],
       ExamNameReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,12}$/,// 新建考试名正则
       examMessageReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,20}$/,// 新建考试描述正则
       examFractionReg: /^[0-9]{1,3}$/,// 新建考试分数正则
@@ -475,58 +521,65 @@ export default {
     BtnGo(n) { //弹出框下一步按钮事件
       switch (n) {
         case 1:
-          if (!this.ExamNameReg.test(this.examName)) {
-            this.isShowErr.splice(0, 1, true)
-          } else {
-            this.isShowErr.splice(0, 1, false)
-          }
-          if (!this.examMessageReg.test(this.examMessage)) {
-            this.isShowErr.splice(1, 1, true)
-          } else {
-            this.isShowErr.splice(1, 1, false)
-          }
-          if (!this.examFractionReg.test(this.examFraction)) {
-            this.isShowErr.splice(2, 1, true)
-          } else {
-            this.isShowErr.splice(2, 1, false)
-          }
-          if (!this.examTimeReg.test(this.examTime)) {
-            this.isShowErr.splice(3, 1, true)
-          } else {
-            this.isShowErr.splice(3, 1, false)
-          }
-          if (!this.examTypeReg.test(this.examType)) {
-            this.isShowErr.splice(4, 1, true)
-          } else {
-            this.isShowErr.splice(4, 1, false)
-          }
-          if (this.isShowErr[0] === false &&
-            this.isShowErr[1] === false &&
-            this.isShowErr[2] === false &&
-            this.isShowErr[3] === false &&
-            this.isShowErr[4] === false) {
-            this.isShowOperationOne = false
-            this.isShowOperationTwo = true
-            this.isShowSuccessOne = true
-          }
+          this.isShowOperationOne = false
+          this.isShowOperationTwo = true
+          this.isShowSuccessOne = true
+          // if (!this.ExamNameReg.test(this.examName)) {
+          //   this.isShowErr.splice(0, 1, true)
+          // } else {
+          //   this.isShowErr.splice(0, 1, false)
+          // }
+          // if (!this.examMessageReg.test(this.examMessage)) {
+          //   this.isShowErr.splice(1, 1, true)
+          // } else {
+          //   this.isShowErr.splice(1, 1, false)
+          // }
+          // if (!this.examFractionReg.test(this.examFraction)) {
+          //   this.isShowErr.splice(2, 1, true)
+          // } else {
+          //   this.isShowErr.splice(2, 1, false)
+          // }
+          // if (!this.examTimeReg.test(this.examTime)) {
+          //   this.isShowErr.splice(3, 1, true)
+          // } else {
+          //   this.isShowErr.splice(3, 1, false)
+          // }
+          // if (!this.examTypeReg.test(this.examType)) {
+          //   this.isShowErr.splice(4, 1, true)
+          // } else {
+          //   this.isShowErr.splice(4, 1, false)
+          // }
+          // if (this.isShowErr[0] === false &&
+          //   this.isShowErr[1] === false &&
+          //   this.isShowErr[2] === false &&
+          //   this.isShowErr[3] === false &&
+          //   this.isShowErr[4] === false) {
+          //   this.isShowOperationOne = false
+          //   this.isShowOperationTwo = true
+          //   this.isShowSuccessOne = true
+          // }
           break
         case 2:
-          if (this.itemLists.length > 0) {
-            let num = 0
-            for (let obj of this.itemLists) {
-              num += parseInt(obj.fraction)
-            }
-            if (num === parseInt(this.examFraction)) {
-              this.isShowOperationTwo = false
-              this.isShowOperationThree = true
-              this.isShowSuccessTwo = true
-              this.isShowSuccessThree = true
-            } else {
-              alert(`你设置的考试满分分数为${this.examFraction}, 但是你添加的考题分数一共为${num}`)
-            }
-          } else {
-            alert('必须设置一个以上的考题')
-          }
+          this.isShowOperationTwo = false
+          this.isShowOperationThree = true
+          this.isShowSuccessTwo = true
+          this.isShowSuccessThree = true
+          // if (this.itemLists.length > 0) {
+          //   let num = 0
+          //   for (let obj of this.itemLists) {
+          //     num += parseInt(obj.fraction)
+          //   }
+          //   if (num === parseInt(this.examFraction)) {
+          //     this.isShowOperationTwo = false
+          //     this.isShowOperationThree = true
+          //     this.isShowSuccessTwo = true
+          //     this.isShowSuccessThree = true
+          //   } else {
+          //     alert(`你设置的考试满分分数为${this.examFraction}, 但是你添加的考题分数一共为${num}`)
+          //   }
+          // } else {
+          //   alert('必须设置一个以上的考题')
+          // }
           break
         case 3:
           let obj = { // 获取输入内容
@@ -582,11 +635,11 @@ export default {
         "-" + aData.getDate()
       return dateValue
     },
-    examId(){ //生成考试id
-      if(this.exams[0].length > 0){
+    examId() { //生成考试id
+      if (this.exams[0].length > 0) {
         let arr = this.exams[0].length - 1
-        return this.exams[0][arr].id++
-      }else{
+        return this.exams[0][arr].id + 1
+      } else {
         return 1
       }
     },
@@ -622,25 +675,156 @@ export default {
       this.showExam('one')
       this.isShowExam = false
     },
-    editExam(str, id) { //编辑考题或者查看考题详情
-      if (str === 'details') { //详情页面处理
-        this.exams[0].some(item => {
-          if (item.id === id) {
-            this.temporaryStorageExam = item
-            return true
+    editExam(str, id) { //编辑考试 或者查看考试详情
+      switch (str) {
+        case 'details':
+          this.exams[0].some(item => {
+            if (item.id === id) {
+              this.temporaryStorageExam = item
+              return true
+            }
+          })
+          this.isShowExam = true
+          this.isShowExamEdit = false
+          break
+        case 'edit':
+          this.exams[0].some(item => {
+            if (item.id === id) {
+              this.temporaryStorageExam = item
+              this.editExam('active')
+              return true
+            }
+          })
+          this.isShowExam = true
+          this.isShowExamEdit = true
+          break
+        case 'name':
+          if (this.editExamText[0] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText.splice(0, 1, '')
+          } else if (this.editExamText[0].length < 1) {
+            this.editExamText.splice(0, 1, '点击这里填写新内容(不填默认为原内容)')
           }
-        })
-        this.isShowExam = true
-        this.isShowExamEdit = false
-      } else if (str === 'edit') { //编辑考题页面处理
-        this.exams[0].some(item => {
-          if (item.id === id) {
-            this.temporaryStorageExam = item
-            return true
+          break
+        case 'message':
+          if (this.editExamText[1] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText.splice(1, 1, '')
+          } else if (this.editExamText[1].length < 1) {
+            this.editExamText.splice(1, 1, '点击这里填写新内容(不填默认为原内容)')
           }
-        })
-        this.isShowExam = true
-        this.isShowExamEdit = true
+          break
+        case 'fraction':
+          if (this.editExamText[2] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText.splice(2, 1, '')
+          } else if (this.editExamText[2].length < 1) {
+            this.editExamText.splice(2, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'time':
+          if (this.editExamText[3] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText.splice(3, 1, '')
+          } else if (this.editExamText[3].length < 1) {
+            this.editExamText.splice(3, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'type':
+          if (this.editExamText[4] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText.splice(4, 1, '')
+          } else if (this.editExamText[4].length < 1) {
+            this.editExamText.splice(4, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'active':
+          switch (id) {
+            case 1:
+              this.isShowActive.splice(0, 1, true)
+              this.isShowActive.splice(1, 1, false)
+              break
+            case 2:
+              this.isShowActive.splice(1, 1, true)
+              this.isShowActive.splice(0, 1, false)
+              break
+            case 3:
+              this.isShowActive.splice(2, 1, true)
+              this.isShowActive.splice(3, 1, false)
+              break
+            case 4:
+              this.isShowActive.splice(3, 1, true)
+              this.isShowActive.splice(2, 1, false)
+              break
+            default:
+              if (this.temporaryStorageExam.setting.examScore === 'yes') {
+                this.isShowActive.splice(0, 1, true)
+                this.isShowActive.splice(1, 1, false)
+              } else {
+                this.isShowActive.splice(1, 1, true)
+                this.isShowActive.splice(0, 1, false)
+              }
+              if (this.temporaryStorageExam.setting.examAnswer === 'no') {
+                this.isShowActive.splice(2, 1, true)
+                this.isShowActive.splice(3, 1, false)
+              } else {
+                this.isShowActive.splice(3, 1, true)
+                this.isShowActive.splice(2, 1, false)
+              }
+              break
+          }
+          break
+        case 'itemName':
+          if (this.editExamText[5][0] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5].splice(0, 1, '')
+          } else if (this.editExamText[5][0].length < 1) {
+            this.editExamText[5].splice(0, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemType':
+          if (this.editExamText[5][1] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5].splice(1, 1, '')
+          } else if (this.editExamText[5][1].length < 1) {
+            this.editExamText[5].splice(1, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemFraction':
+          if (this.editExamText[5][2] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5].splice(2, 1, '')
+          } else if (this.editExamText[5][2].length < 1) {
+            this.editExamText[5].splice(2, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemOption1':
+          if (this.editExamText[5][3][0] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5][3].splice(0, 1, '')
+          } else if (this.editExamText[5][3][0].length < 1) {
+            this.editExamText[5][3].splice(0, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemOption2':
+          if (this.editExamText[5][3][1] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5][3].splice(1, 1, '')
+          } else if (this.editExamText[5][3][1].length < 1) {
+            this.editExamText[5][3].splice(1, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemOption3':
+          if (this.editExamText[5][3][2] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5][3].splice(2, 1, '')
+          } else if (this.editExamText[5][3][2].length < 1) {
+            this.editExamText[5][3].splice(2, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemOption4':
+          if (this.editExamText[5][3][3] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5][3].splice(3, 1, '')
+          } else if (this.editExamText[5][3][3].length < 1) {
+            this.editExamText[5][3].splice(3, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
+        case 'itemAnswer':
+          if (this.editExamText[5][4] === "点击这里填写新内容(不填默认为原内容)") {
+            this.editExamText[5].splice(4, 1, '')
+          } else if (this.editExamText[5][4].length < 1) {
+            this.editExamText[5].splice(4, 1, '点击这里填写新内容(不填默认为原内容)')
+          }
+          break
       }
     },
     newExamItem(str) { // 编辑考题按钮和新建单选题按钮
@@ -772,7 +956,7 @@ export default {
           }
           this.searchExamsIndex = 0
           this.isShowMain = true
-        }else{
+        } else {
           this.isShowMain = false
         }
       } else if (str === 'search') { //说明是在搜索关键字，因此需要进行处理然后再显示指定内容
@@ -813,9 +997,6 @@ export default {
         this.isShowBlur = false
       }
     },
-    as(a) {
-      console.log(a);
-    }
   },
   // 生命周期钩子
   mounted() {
@@ -1841,6 +2022,7 @@ input {
   font-size: 14px;
   background-color: #eee;
   border: 1px solid #b1b6bc;
+  position: relative;
 }
 
 [data-exam-details]>ul>li,
@@ -1855,7 +2037,7 @@ input {
 }
 
 [data-exam-details]>ul>li:nth-child(9) {
-  flex: 10;
+  flex: 5;
 }
 
 [data-exam-details]>ul>li:nth-child(10) {
@@ -1927,7 +2109,7 @@ input {
 
 /* 考试编辑按钮部分 */
 [data-exam-edit]>ul>li:nth-child(6) {
-  flex: 10;
+  flex: 3;
 }
 
 [data-exam-edit]>ul:nth-child(2)>li:nth-child(6) {
@@ -1939,6 +2121,7 @@ input {
   overflow: auto;
 }
 
+/* 考题列表 */
 [data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul {
   display: grid;
   grid-template-columns: 1fr;
@@ -1961,8 +2144,17 @@ input {
 [data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li p {
   display: inline-block;
   letter-spacing: 1px;
-  font-size: 14px;
-  color: #000;
+  font-size: 12px;
+  color: #999;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li input{
+  font-size: 12px;
+  color: #666;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li:nth-child(2) input{
+  pointer-events: none;
 }
 
 [data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li:nth-child(4) {
@@ -1983,9 +2175,64 @@ input {
   color: #333;
 }
 
-[data-exam-edit]>ul:nth-child(2)>li:nth-child(7) button {
-  /* position: absolute; */
+[data-exam-edit]>ul:nth-child(2)>li {
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 605px;
+}
 
+[data-exam-edit]>ul:nth-child(2)>li>span {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #b1b6bc;
+  letter-spacing: .8px;
+  pointer-events: none;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li>input {
+  flex: 1;
+  font-size: 14px;
+  color: #666;
+  letter-spacing: .8px;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li>div {
+  display: grid;
+  grid-template-columns: 1fr;
+  height: 70px;
+  width: 145px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid #999;
+  overflow: hidden;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li>div p {
+  display: inline-block;
+  font-size: 12px;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  line-height: 30px;
+  cursor: pointer;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li>div p.active {
+  color: #fff;
+  background-color: #6c7d78;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li>div button {
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background-color: rgb(247, 105, 105);
+}
+
+[data-exam-edit]>ul:nth-child(2)>li>div:nth-child(4) button {
+  background-color: #3aa0ff;
 }
 
 /* 表脚部分 */
