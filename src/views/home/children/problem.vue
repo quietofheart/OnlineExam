@@ -212,7 +212,7 @@
           <!-- 表头部分 -->
           <thead class="exam-head">
             <tr>
-              <th>序号</th>
+              <th>ID</th>
               <th>试卷名称</th>
               <th>描述信息</th>
               <th>分数</th>
@@ -233,7 +233,7 @@
               <td>{{ item.author }}</td>
               <td>{{ item.time }}</td>
               <td>{{ item.type }}</td>
-              <td>{{ item.create }}</td>
+              <td>{{ item.create[1] }}</td>
               <td>
                 <button @click="editExam('details', item.id)">详情</button>
                 <button @click="editExam('edit', item.id)">编辑</button>
@@ -260,7 +260,81 @@
         </div>
         <!-- 考试编辑 -->
         <div v-if="isShowExamEdit" data-exam-edit>
-          666
+          <!-- 左侧 -->
+          <ul>
+            <li>试卷名称</li>
+            <li>描述信息</li>
+            <li>考试总分</li>
+            <li>考试限时</li>
+            <li>考试学科</li>
+            <li>考题列表</li>
+            <li>考试设置</li>
+          </ul>
+          <!-- 右侧 -->
+          <ul>
+            <li>
+              <label for="temporaryStorageExam.name">{{ temporaryStorageExam.name }}</label>
+              <input type="text" id="temporaryStorageExam.name">
+            </li>
+            <li>
+              <label for="temporaryStorageExam.message">{{ temporaryStorageExam.message }}</label>
+              <input type="text" id="temporaryStorageExam.message">
+            </li>
+            <li>
+              <label for="temporaryStorageExam.fraction">{{ temporaryStorageExam.fraction }}</label>
+              <input type="text" id="temporaryStorageExam.fraction">
+            </li>
+            <li>
+              <label for="temporaryStorageExam.time">{{ temporaryStorageExam.time }}</label>
+              <input type="text" id="temporaryStorageExam.time">
+            </li>
+            <li>
+              <label for="temporaryStorageExam.type">{{ temporaryStorageExam.type }}</label>
+              <input type="text" id="temporaryStorageExam.type">
+            </li>
+            <li>
+              <ul v-for="item in temporaryStorageExam.item">
+                <li>
+                  <p>题干：</p>{{ item.name }}
+                </li>
+                <li>
+                  <p>题型：</p>{{ item.type }}
+                </li>
+                <li>
+                  <p>分数：</p>{{ item.fraction }}
+                </li>
+                <li>
+                  <p>选项</p>
+                  <span>
+                    <p>A：</p>{{ item.option[0] }}
+                  </span>
+                  <span>
+                    <p>B：</p>{{ item.option[1] }}
+                  </span>
+                  <span>
+                    <p>C：</p>{{ item.option[2] }}
+                  </span>
+                  <span>
+                    <p>D：</p>{{ item.option[3] }}
+                  </span>
+                </li>
+                <li>
+                  <p>答案：</p>{{ item.answer }}
+                </li>
+                <li>
+
+                </li>
+              </ul>
+            </li>
+            <li>
+              <p v-if="temporaryStorageExam.setting.examScore === 'yes'">允许考生查看得分</p>
+              <p v-else class="blackText">不允许考生查看得分</p>
+              <p v-if="temporaryStorageExam.setting.examAnswer === 'no'">不允许考生查看正确答案</p>
+              <p v-else class="blackText">允许考生查看正确答案</p>
+              <button @click="delExam(temporaryStorageExam.id)">删除考试</button>
+              <button>确认编辑</button>
+            </li>
+          </ul>
         </div>
         <!-- 考试详情  -->
         <div v-else data-exam-details>
@@ -284,19 +358,43 @@
             <li>{{ temporaryStorageExam.time }}</li>
             <li>{{ temporaryStorageExam.type }}</li>
             <li>{{ temporaryStorageExam.author }}</li>
-            <li>{{ temporaryStorageExam.create }}</li>
+            <li>{{ temporaryStorageExam.create[0] }}</li>
             <li>
               <ul v-for="item in temporaryStorageExam.item">
-                <li>题干：{{ item.name }}</li>
-                <li>题型：{{ item.type }}</li>
-                <li>分数：{{ item.fraction }}</li>
-                <li>选项：{{ item.option }}</li>
-                <li>答案：{{ item.answer }}</li>
+                <li>
+                  <p>题干：</p>{{ item.name }}
+                </li>
+                <li>
+                  <p>题型：</p>{{ item.type }}
+                </li>
+                <li>
+                  <p>分数：</p>{{ item.fraction }}
+                </li>
+                <li>
+                  <p>选项</p>
+                  <span>
+                    <p>A：</p>{{ item.option[0] }}
+                  </span>
+                  <span>
+                    <p>B：</p>{{ item.option[1] }}
+                  </span>
+                  <span>
+                    <p>C：</p>{{ item.option[2] }}
+                  </span>
+                  <span>
+                    <p>D：</p>{{ item.option[3] }}
+                  </span>
+                </li>
+                <li>
+                  <p>答案：</p>{{ item.answer }}
+                </li>
               </ul>
             </li>
             <li>
-              <p>考试结束后是否允许考生查看得分? {{ temporaryStorageExam.setting.examScore }}</p>
-              <p>考试结束后,已答错的考题是否允许考生查看正确答案? {{ temporaryStorageExam.setting.examAnswer }}</p>
+              <p v-if="temporaryStorageExam.setting.examScore === 'yes'">允许考生查看得分</p>
+              <p v-else class="blackText">不允许考生查看得分</p>
+              <p v-if="temporaryStorageExam.setting.examAnswer === 'no'">不允许考生查看正确答案</p>
+              <p v-else class="blackText">允许考生查看正确答案</p>
             </li>
           </ul>
         </div>
@@ -432,7 +530,7 @@ export default {
           break
         case 3:
           let obj = { // 获取输入内容
-            id: parseInt(this.exams[0].length + 1),
+            id: this.examId(),
             name: this.examName,
             message: this.examMessage,
             fraction: parseInt(this.examFraction),
@@ -471,8 +569,26 @@ export default {
     },
     nowTime() { // 获取当前时间
       let aData = new Date()
-      let dateValue = aData.getFullYear() + "-" + (aData.getMonth() + 1) + "-" + aData.getDate();
+      let dateValue = []
+      dateValue[0] = aData.getFullYear() +
+        "年" + (aData.getMonth() + 1) +
+        "月" + aData.getDate() +
+        "日" + aData.getHours() +
+        "时" + aData.getMinutes() +
+        "分" + aData.getSeconds() +
+        "秒"
+      dateValue[1] = aData.getFullYear() +
+        "-" + (aData.getMonth() + 1) +
+        "-" + aData.getDate()
       return dateValue
+    },
+    examId(){ //生成考试id
+      if(this.exams[0].length > 0){
+        let arr = this.exams[0].length - 1
+        return this.exams[0][arr].id++
+      }else{
+        return 1
+      }
     },
     delItem(index) { // 删除考题
       this.itemLists.splice(index, 1)
@@ -488,6 +604,43 @@ export default {
         this.examItemAnswer = obj.answer
         this.isShowNewItem.splice(1, 4, false)
         this.isShowNewItem.splice(0, 1, true)
+      }
+    },
+    delExam(id) { // 删除考试
+      this.exams[0].some((item, index) => {
+        if (item.id === id) {
+          this.exams[0].splice(index, 1)
+          return true
+        }
+      })
+      localStorage.removeItem('exam')
+      if (this.exams[0].length > 0) {
+        let jsonStr = JSON.stringify(this.exams[0])
+        localStorage.setItem('exam', jsonStr)
+        this.exams[0] = []
+      }
+      this.showExam('one')
+      this.isShowExam = false
+    },
+    editExam(str, id) { //编辑考题或者查看考题详情
+      if (str === 'details') { //详情页面处理
+        this.exams[0].some(item => {
+          if (item.id === id) {
+            this.temporaryStorageExam = item
+            return true
+          }
+        })
+        this.isShowExam = true
+        this.isShowExamEdit = false
+      } else if (str === 'edit') { //编辑考题页面处理
+        this.exams[0].some(item => {
+          if (item.id === id) {
+            this.temporaryStorageExam = item
+            return true
+          }
+        })
+        this.isShowExam = true
+        this.isShowExamEdit = true
       }
     },
     newExamItem(str) { // 编辑考题按钮和新建单选题按钮
@@ -545,7 +698,6 @@ export default {
         }
         if (this.examItemOption.length < 4) {
           errStr.push('四个选项必须都设置内容')
-          console.log('1');
         } else {
           for (let item of this.examItemOption) {
             if (item == undefined) {
@@ -620,6 +772,8 @@ export default {
           }
           this.searchExamsIndex = 0
           this.isShowMain = true
+        }else{
+          this.isShowMain = false
         }
       } else if (str === 'search') { //说明是在搜索关键字，因此需要进行处理然后再显示指定内容
         let strArr = arg[0].split('') //将搜索关键词拆分成单个字符一项的数组
@@ -659,19 +813,8 @@ export default {
         this.isShowBlur = false
       }
     },
-    editExam(str, id) { //编辑考题或者查看考题详情
-      if (str === 'details') { //详情页面处理
-        this.exams[0].some(item => {
-          if (item.id === id) {
-            this.temporaryStorageExam = item
-          }
-        })
-        this.isShowExam = true
-        this.isShowExamEdit = false
-      } else if (str === 'edit') { //编辑考题页面处理
-        this.isShowExam = true
-        this.isShowExamEdit = true
-      }
+    as(a) {
+      console.log(a);
     }
   },
   // 生命周期钩子
@@ -1675,7 +1818,9 @@ input {
   background-color: #fff;
 }
 
-[data-exam-details] {
+/* 考试详情按钮部分 */
+[data-exam-details],
+[data-exam-edit] {
   height: calc(100% - 50px);
   width: 100%;
   display: grid;
@@ -1683,19 +1828,24 @@ input {
 }
 
 /* 左边文本区域 */
-
-[data-exam-details]>ul{
+[data-exam-details]>ul,
+[data-exam-edit]>ul {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
+  color: #333;
+  letter-spacing: .5px;
+  pointer-events: none;
+  font-size: 14px;
   background-color: #eee;
   border: 1px solid #b1b6bc;
 }
 
-[data-exam-details]>ul>li{
-  flex:1;
+[data-exam-details]>ul>li,
+[data-exam-edit]>ul>li {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1704,20 +1854,25 @@ input {
   border: 1px solid #b1b6bc;
 }
 
-[data-exam-details]>ul>li:nth-child(9){
-  flex:10;
+[data-exam-details]>ul>li:nth-child(9) {
+  flex: 10;
 }
 
-[data-exam-details]>ul>li:nth-child(10){
+[data-exam-details]>ul>li:nth-child(10) {
+  flex: 2;
   font-size: 12px;
 }
 
 /* 右边数据区域 */
-[data-exam-details]>ul:nth-child(2){
+[data-exam-details]>ul:nth-child(2),
+[data-exam-edit]>ul:nth-child(2) {
   background-color: #fff;
+  color: #666;
+  letter-spacing: .5px;
+  pointer-events: all;
 }
 
-[data-exam-details]>ul:nth-child(2)>li:nth-child(9){
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9) {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -1726,22 +1881,111 @@ input {
   overflow: auto;
 }
 
-[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
   min-height: 200px;
   width: 565px;
   margin: 10px 10px;
-  padding: 10px  10px;
+  padding: 10px 10px;
   box-shadow: 0 0 3px #000;
   border-radius: 5px;
   box-sizing: border-box;
+  overflow: auto;
 }
 
-[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul>li{
-  flex: 1;
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul>li {
   font-size: 12px;
+  line-height: 20px;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul>li p {
+  display: inline-block;
+  letter-spacing: 1px;
+  font-size: 14px;
+  color: #000;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(9)>ul>li:nth-child(4) {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(10) {
+  color: #999;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+}
+
+[data-exam-details]>ul:nth-child(2)>li:nth-child(10) .blackText {
+  color: #333;
+}
+
+/* 考试编辑按钮部分 */
+[data-exam-edit]>ul>li:nth-child(6) {
+  flex: 10;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6) {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  max-height: 435px;
+  overflow: auto;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  min-height: 200px;
+  width: 565px;
+  margin: 10px 10px;
+  padding: 10px 10px;
+  box-shadow: 0 0 3px #000;
+  border-radius: 5px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li p {
+  display: inline-block;
+  letter-spacing: 1px;
+  font-size: 14px;
+  color: #000;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li:nth-child(4) {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(7) {
+  color: #999;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(7) .blackText {
+  color: #333;
+}
+
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(7) button {
+  /* position: absolute; */
+
 }
 
 /* 表脚部分 */

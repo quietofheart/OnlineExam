@@ -12,7 +12,7 @@
           <div class="test-bottom">
             <div>
               <img src="@/assets/img/home/test/create-time.svg" alt="create-time">
-              <span class="create-time">{{ item.create }}</span>
+              <span class="create-time">{{ item.create[1] }}</span>
             </div>
             <div>
               <img src="@/assets/img/home/test/limit-time.svg" alt="limit-time">
