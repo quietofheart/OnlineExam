@@ -301,46 +301,39 @@
             <li>
               <ul v-for="(item, index) in temporaryStorageExam.item">
                 <li>
-                  <p>原题干内容：</p>{{ item.name }}
-                  <input type="text" v-model="editExamText[5][0]" @focus="editExam('itemName')"
-                    @blur="editExam('itemName')">
+                  <p>题干：</p>
+                  <input type="text" v-model="temporaryStorageExam.item[index].name">
                 </li>
                 <li>
-                  <p>原题型：</p>{{ item.type }}
-                  <input type="text" v-model="editExamText[5][1]">
+                  <p>题型：暂不支持变更</p>
+                  <input type="text" v-model="temporaryStorageExam.item[index].type">
                 </li>
                 <li>
-                  <p>原分数：</p>{{ item.fraction }}
-                  <input type="text" v-model="editExamText[5][2]" @focus="editExam('itemFraction')"
-                    @blur="editExam('itemFraction')">
+                  <p>分数：</p>
+                  <input type="text" v-model="temporaryStorageExam.item[index].fraction">
                 </li>
                 <li>
-                  <p>原选项</p>
+                  <p>选项</p>
                   <span>
-                    <p>A：</p>{{ item.option[0] }}
-                    <input type="text" v-model="editExamText[5][3][0]" @focus="editExam('itemOption1')"
-                      @blur="editExam('itemOption1')">
+                    <p>A：</p>
+                    <input type="text" v-model="temporaryStorageExam.item[index].option[0]">
                   </span>
                   <span>
-                    <p>B：</p>{{ item.option[1] }}
-                    <input type="text" v-model="editExamText[5][3][1]" @focus="editExam('itemOption2')"
-                      @blur="editExam('itemOption2')">
+                    <p>B：</p>
+                    <input type="text" v-model="temporaryStorageExam.item[index].option[1]">
                   </span>
                   <span>
-                    <p>C：</p>{{ item.option[2] }}
-                    <input type="text" v-model="editExamText[5][3][2]" @focus="editExam('itemOption3')"
-                      @blur="editExam('itemOption3')">
+                    <p>C：</p>
+                    <input type="text" v-model="temporaryStorageExam.item[index].option[2]">
                   </span>
                   <span>
-                    <p>D：</p>{{ item.option[3] }}
-                    <input type="text" v-model="editExamText[5][3][3]" @focus="editExam('itemOption4')"
-                      @blur="editExam('itemOption4')">
+                    <p>D：</p>
+                    <input type="text" v-model="temporaryStorageExam.item[index].option[3]">
                   </span>
                 </li>
                 <li>
-                  <p>原答案：</p>{{ item.answer }}
-                  <input type="text" v-model="editExamText[5][4]" @focus="editExam('itemAnswer')"
-                    @blur="editExam('itemAnswer')">
+                  <p>答案：</p>
+                  <input type="text" v-model="temporaryStorageExam.item[index].answer">
                 </li>
               </ul>
             </li>
@@ -358,7 +351,7 @@
                 <button @click="delExam(temporaryStorageExam.id)">删除考试</button>
               </div>
               <div>
-                <button>确认更改</button>
+                <button @click="editExam('sure', temporaryStorageExam.id)">确认更改</button>
               </div>
             </li>
           </ul>
@@ -461,18 +454,7 @@ export default {
         "点击这里填写新内容(不填默认为原内容)",
         "点击这里填写新内容(不填默认为原内容)",
         "点击这里填写新内容(不填默认为原内容)",
-        [
-          "点击这里填写新内容(不填默认为原内容)",
-          "此项暂不支持修改",
-          "点击这里填写新内容(不填默认为原内容)",
-          [
-            "点击这里填写新内容(不填默认为原内容)",
-            "点击这里填写新内容(不填默认为原内容)",
-            "点击这里填写新内容(不填默认为原内容)",
-            "点击这里填写新内容(不填默认为原内容)"
-          ],
-          "点击这里填写新内容(不填默认为原内容)"
-        ], []],
+        [], []],
       ExamNameReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,12}$/,// 新建考试名正则
       examMessageReg: /^[a-zA-Z0-9\u4e00-\u9fa5]{1,20}$/,// 新建考试描述正则
       examFractionReg: /^[0-9]{1,3}$/,// 新建考试分数正则
@@ -677,7 +659,7 @@ export default {
     },
     editExam(str, id) { //编辑考试 或者查看考试详情
       switch (str) {
-        case 'details':
+        case 'details': // 详情页按钮显示页面
           this.exams[0].some(item => {
             if (item.id === id) {
               this.temporaryStorageExam = item
@@ -687,7 +669,7 @@ export default {
           this.isShowExam = true
           this.isShowExamEdit = false
           break
-        case 'edit':
+        case 'edit': // 编辑页按钮显示页面
           this.exams[0].some(item => {
             if (item.id === id) {
               this.temporaryStorageExam = item
@@ -698,42 +680,42 @@ export default {
           this.isShowExam = true
           this.isShowExamEdit = true
           break
-        case 'name':
+        case 'name': // 处理考试名称编辑
           if (this.editExamText[0] === "点击这里填写新内容(不填默认为原内容)") {
             this.editExamText.splice(0, 1, '')
           } else if (this.editExamText[0].length < 1) {
             this.editExamText.splice(0, 1, '点击这里填写新内容(不填默认为原内容)')
           }
           break
-        case 'message':
+        case 'message': // 处理考试描述编辑
           if (this.editExamText[1] === "点击这里填写新内容(不填默认为原内容)") {
             this.editExamText.splice(1, 1, '')
           } else if (this.editExamText[1].length < 1) {
             this.editExamText.splice(1, 1, '点击这里填写新内容(不填默认为原内容)')
           }
           break
-        case 'fraction':
+        case 'fraction': // 处理考试分数编辑
           if (this.editExamText[2] === "点击这里填写新内容(不填默认为原内容)") {
             this.editExamText.splice(2, 1, '')
           } else if (this.editExamText[2].length < 1) {
             this.editExamText.splice(2, 1, '点击这里填写新内容(不填默认为原内容)')
           }
           break
-        case 'time':
+        case 'time': // 处理考试限时编辑
           if (this.editExamText[3] === "点击这里填写新内容(不填默认为原内容)") {
             this.editExamText.splice(3, 1, '')
           } else if (this.editExamText[3].length < 1) {
             this.editExamText.splice(3, 1, '点击这里填写新内容(不填默认为原内容)')
           }
           break
-        case 'type':
+        case 'type': // 处理考试学科编辑
           if (this.editExamText[4] === "点击这里填写新内容(不填默认为原内容)") {
             this.editExamText.splice(4, 1, '')
           } else if (this.editExamText[4].length < 1) {
             this.editExamText.splice(4, 1, '点击这里填写新内容(不填默认为原内容)')
           }
           break
-        case 'active':
+        case 'active': // 处理考试设置编辑
           switch (id) {
             case 1:
               this.isShowActive.splice(0, 1, true)
@@ -769,61 +751,101 @@ export default {
               break
           }
           break
-        case 'itemName':
-          if (this.editExamText[5][0] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5].splice(0, 1, '')
-          } else if (this.editExamText[5][0].length < 1) {
-            this.editExamText[5].splice(0, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemType':
-          if (this.editExamText[5][1] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5].splice(1, 1, '')
-          } else if (this.editExamText[5][1].length < 1) {
-            this.editExamText[5].splice(1, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemFraction':
-          if (this.editExamText[5][2] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5].splice(2, 1, '')
-          } else if (this.editExamText[5][2].length < 1) {
-            this.editExamText[5].splice(2, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemOption1':
-          if (this.editExamText[5][3][0] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5][3].splice(0, 1, '')
-          } else if (this.editExamText[5][3][0].length < 1) {
-            this.editExamText[5][3].splice(0, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemOption2':
-          if (this.editExamText[5][3][1] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5][3].splice(1, 1, '')
-          } else if (this.editExamText[5][3][1].length < 1) {
-            this.editExamText[5][3].splice(1, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemOption3':
-          if (this.editExamText[5][3][2] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5][3].splice(2, 1, '')
-          } else if (this.editExamText[5][3][2].length < 1) {
-            this.editExamText[5][3].splice(2, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemOption4':
-          if (this.editExamText[5][3][3] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5][3].splice(3, 1, '')
-          } else if (this.editExamText[5][3][3].length < 1) {
-            this.editExamText[5][3].splice(3, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
-          break
-        case 'itemAnswer':
-          if (this.editExamText[5][4] === "点击这里填写新内容(不填默认为原内容)") {
-            this.editExamText[5].splice(4, 1, '')
-          } else if (this.editExamText[5][4].length < 1) {
-            this.editExamText[5].splice(4, 1, '点击这里填写新内容(不填默认为原内容)')
-          }
+        case 'sure': // 处理确认更改按钮
+          this.editExamText.some((item, index) => {
+            // 处理前五项字符串类型的考试自身信息
+            if (typeof (item) === 'string') {
+              // 未填写内容则等于原内容
+              if (item === "点击这里填写新内容(不填默认为原内容)") {
+                switch (index) {
+                  case 0:
+                    this.editExamText.splice(0, 1, this.temporaryStorageExam.name)
+                    break
+                  case 1:
+                    this.editExamText.splice(1, 1, this.temporaryStorageExam.message)
+                    break
+                  case 2:
+                    this.editExamText.splice(2, 1, this.temporaryStorageExam.fraction)
+                    break
+                  case 3:
+                    this.editExamText.splice(3, 1, this.temporaryStorageExam.time)
+                    break
+                  case 4:
+                    this.editExamText.splice(4, 1, this.temporaryStorageExam.type)
+                    break
+                }
+              } else { // 填写内容则等于新内容
+                switch (index) {
+                  case 0:
+                    this.editExamText.splice(0, 1, item)
+                    break
+                  case 1:
+                    this.editExamText.splice(1, 1, item)
+                    break
+                  case 2:
+                    this.editExamText.splice(2, 1, item)
+                    break
+                  case 3:
+                    this.editExamText.splice(3, 1, item)
+                    break
+                  case 4:
+                    this.editExamText.splice(4, 1, item)
+                    break
+                }
+              }
+            } else { // 处理后两项考题数组和考试设置数组
+              if (index === 5) { // 考题数组处理
+                this.temporaryStorageExam.item.some((item5, index5) => {
+                  this.editExamText[5].push(item5)
+                })
+              } else { // 考试设置数组处理
+                if (this.isShowActive[0] === true) {
+                  this.editExamText[6].splice(0, 1, 'yes')
+                } else {
+                  this.editExamText[6].splice(0, 1, 'no')
+                }
+                if (this.isShowActive[2] === true) {
+                  this.editExamText[6].splice(1, 1, 'no')
+                } else {
+                  this.editExamText[6].splice(1, 1, 'yes')
+                }
+                // 全部处理完毕，添加编辑过后的考试
+                let obj = {
+                  'id': this.temporaryStorageExam.id,
+                  'name': this.editExamText[0],
+                  'message': this.editExamText[1],
+                  'fraction': this.editExamText[2],
+                  'author': this.temporaryStorageExam.author,
+                  'time': this.editExamText[3],
+                  'type': this.editExamText[4],
+                  'create': this.temporaryStorageExam.create,
+                  'item': this.editExamText[5],
+                  'setting': { 'examScore': this.editExamText[6][0], 'examAnswer': this.editExamText[6][1] }
+                }
+                this.exams[0].some((item, index) => {
+                  if (obj.id === item.id) {
+                    this.exams[0].splice(index, 1, obj)
+                    localStorage.removeItem('exam')
+                    let examStr = JSON.stringify(this.exams[0])
+                    localStorage.setItem('exam', examStr)
+                    return true
+                  }
+                })
+                this.exams[0] = []
+                this.editExamText = [
+                  "点击这里填写新内容(不填默认为原内容)",
+                  "点击这里填写新内容(不填默认为原内容)",
+                  "点击这里填写新内容(不填默认为原内容)",
+                  "点击这里填写新内容(不填默认为原内容)",
+                  "点击这里填写新内容(不填默认为原内容)",
+                  [], []]
+                this.showExam('one')
+                this.isShowExam = false
+                return true
+              }
+            }
+          })
+
           break
       }
     },
@@ -2148,12 +2170,12 @@ input {
   color: #999;
 }
 
-[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li input{
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li input {
   font-size: 12px;
   color: #666;
 }
 
-[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li:nth-child(2) input{
+[data-exam-edit]>ul:nth-child(2)>li:nth-child(6)>ul>li:nth-child(2) input {
   pointer-events: none;
 }
 
