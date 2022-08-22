@@ -196,9 +196,9 @@
           <input type="text" @input="searchExam(search)" v-model="search" @blur="isShowBlurFun">
           <label for="search">搜索</label>
         </div>
-        <!-- 右侧操作 -->
+        <!-- 右侧操作-->
         <div class="operation">
-          <ul class="operation-item">
+          <ul class="operation-item" @click="alertText">
             <li></li>
             <li></li>
             <li></li>
@@ -503,65 +503,58 @@ export default {
     BtnGo(n) { //弹出框下一步按钮事件
       switch (n) {
         case 1:
-          this.isShowOperationOne = false
-          this.isShowOperationTwo = true
-          this.isShowSuccessOne = true
-          // if (!this.ExamNameReg.test(this.examName)) {
-          //   this.isShowErr.splice(0, 1, true)
-          // } else {
-          //   this.isShowErr.splice(0, 1, false)
-          // }
-          // if (!this.examMessageReg.test(this.examMessage)) {
-          //   this.isShowErr.splice(1, 1, true)
-          // } else {
-          //   this.isShowErr.splice(1, 1, false)
-          // }
-          // if (!this.examFractionReg.test(this.examFraction)) {
-          //   this.isShowErr.splice(2, 1, true)
-          // } else {
-          //   this.isShowErr.splice(2, 1, false)
-          // }
-          // if (!this.examTimeReg.test(this.examTime)) {
-          //   this.isShowErr.splice(3, 1, true)
-          // } else {
-          //   this.isShowErr.splice(3, 1, false)
-          // }
-          // if (!this.examTypeReg.test(this.examType)) {
-          //   this.isShowErr.splice(4, 1, true)
-          // } else {
-          //   this.isShowErr.splice(4, 1, false)
-          // }
-          // if (this.isShowErr[0] === false &&
-          //   this.isShowErr[1] === false &&
-          //   this.isShowErr[2] === false &&
-          //   this.isShowErr[3] === false &&
-          //   this.isShowErr[4] === false) {
-          //   this.isShowOperationOne = false
-          //   this.isShowOperationTwo = true
-          //   this.isShowSuccessOne = true
-          // }
+          if (!this.ExamNameReg.test(this.examName)) {
+            this.isShowErr.splice(0, 1, true)
+          } else {
+            this.isShowErr.splice(0, 1, false)
+          }
+          if (!this.examMessageReg.test(this.examMessage)) {
+            this.isShowErr.splice(1, 1, true)
+          } else {
+            this.isShowErr.splice(1, 1, false)
+          }
+          if (!this.examFractionReg.test(this.examFraction)) {
+            this.isShowErr.splice(2, 1, true)
+          } else {
+            this.isShowErr.splice(2, 1, false)
+          }
+          if (!this.examTimeReg.test(this.examTime)) {
+            this.isShowErr.splice(3, 1, true)
+          } else {
+            this.isShowErr.splice(3, 1, false)
+          }
+          if (!this.examTypeReg.test(this.examType)) {
+            this.isShowErr.splice(4, 1, true)
+          } else {
+            this.isShowErr.splice(4, 1, false)
+          }
+          if (this.isShowErr[0] === false &&
+            this.isShowErr[1] === false &&
+            this.isShowErr[2] === false &&
+            this.isShowErr[3] === false &&
+            this.isShowErr[4] === false) {
+            this.isShowOperationOne = false
+            this.isShowOperationTwo = true
+            this.isShowSuccessOne = true
+          }
           break
         case 2:
-          this.isShowOperationTwo = false
-          this.isShowOperationThree = true
-          this.isShowSuccessTwo = true
-          this.isShowSuccessThree = true
-          // if (this.itemLists.length > 0) {
-          //   let num = 0
-          //   for (let obj of this.itemLists) {
-          //     num += parseInt(obj.fraction)
-          //   }
-          //   if (num === parseInt(this.examFraction)) {
-          //     this.isShowOperationTwo = false
-          //     this.isShowOperationThree = true
-          //     this.isShowSuccessTwo = true
-          //     this.isShowSuccessThree = true
-          //   } else {
-          //     alert(`你设置的考试满分分数为${this.examFraction}, 但是你添加的考题分数一共为${num}`)
-          //   }
-          // } else {
-          //   alert('必须设置一个以上的考题')
-          // }
+          if (this.itemLists.length > 0) {
+            let num = 0
+            for (let obj of this.itemLists) {
+              num += parseInt(obj.fraction)
+            }
+            if (num === parseInt(this.examFraction)) {
+              this.isShowOperationTwo = false
+              this.isShowOperationThree = true
+              this.isShowSuccessTwo = true
+              this.isShowSuccessThree = true
+            } else {
+              alert(`你设置的考试满分分数为${this.examFraction}, 但是你添加的考题分数一共为${num}`)
+            }
+          } else {
+            alert('必须设置一个以上的考题')
+          }
           break
         case 3:
           let obj = { // 获取输入内容
@@ -752,6 +745,7 @@ export default {
           }
           break
         case 'sure': // 处理确认更改按钮
+          // 存储所有更改
           this.editExamText.some((item, index) => {
             // 处理前五项字符串类型的考试自身信息
             if (typeof (item) === 'string') {
@@ -809,44 +803,105 @@ export default {
                 } else {
                   this.editExamText[6].splice(1, 1, 'yes')
                 }
-                // 全部处理完毕，添加编辑过后的考试
-                let obj = {
-                  'id': this.temporaryStorageExam.id,
-                  'name': this.editExamText[0],
-                  'message': this.editExamText[1],
-                  'fraction': this.editExamText[2],
-                  'author': this.temporaryStorageExam.author,
-                  'time': this.editExamText[3],
-                  'type': this.editExamText[4],
-                  'create': this.temporaryStorageExam.create,
-                  'item': this.editExamText[5],
-                  'setting': { 'examScore': this.editExamText[6][0], 'examAnswer': this.editExamText[6][1] }
-                }
-                this.exams[0].some((item, index) => {
-                  if (obj.id === item.id) {
-                    this.exams[0].splice(index, 1, obj)
-                    localStorage.removeItem('exam')
-                    let examStr = JSON.stringify(this.exams[0])
-                    localStorage.setItem('exam', examStr)
-                    return true
-                  }
-                })
-                this.exams[0] = []
-                this.editExamText = [
-                  "点击这里填写新内容(不填默认为原内容)",
-                  "点击这里填写新内容(不填默认为原内容)",
-                  "点击这里填写新内容(不填默认为原内容)",
-                  "点击这里填写新内容(不填默认为原内容)",
-                  "点击这里填写新内容(不填默认为原内容)",
-                  [], []]
-                this.showExam('one')
-                this.isShowExam = false
-                return true
               }
             }
           })
-
-          break
+          // 合法性验证
+          let err = [false, false, false, false, false, false, false] // 存储错误文本
+          let errText = '' // 存储显示的错误文本
+          let errIndex = 1 // 存储错误项序列号
+          let allFraction = 0 //存储考题总分
+          if (!this.ExamNameReg.test(this.editExamText[0])) {
+            err.splice(0, 1, "请输入字母或数字或中文,最少一字符,最多十二字符")
+          }
+          if (!this.examMessageReg.test(this.editExamText[1])) {
+            err.splice(1, 1, "请输入字母或数字或中文,最少一字符,最多二十字符")
+          }
+          if (!this.examFractionReg.test(this.editExamText[2])) {
+            err.splice(2, 1, "请输入纯数字,最少一字符,最多三字符")
+          }
+          if (!this.examTimeReg.test(this.editExamText[3])) {
+            err.splice(2, 1, "请输入纯数字,最少一字符,最多三字符")
+          }
+          if (!this.examTypeReg.test(this.editExamText[4])) {
+            err.splice(2, 1, "请输入字母或数字或中文,最少一字符,最多十字符")
+          }
+          this.editExamText[5].some(item5 => {
+            if (!/^[0-9]{1,3}$/.test(item5.fraction)) {
+              err.splice(5, 1, `题干名以 ${item5.name} 开头的考题所对应的分数必须是纯数字，且最少一字符，最多三字符`)
+            } else {
+              allFraction += parseInt(item5.fraction)
+            }
+          })
+          if (parseInt(this.editExamText[2]) !== allFraction) {
+            err.splice(6, 1, `考试总分数是 ${this.editExamText[2]} 但考题总分数是 ${allFraction} 分数不一致`)
+          }
+          if (err[0] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[0] + '\n'
+          }
+          if (err[1] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[1] + '\n'
+          }
+          if (err[2] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[2] + '\n'
+          }
+          if (err[3] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[3] + '\n'
+          }
+          if (err[4] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[4] + '\n'
+          }
+          if (err[5] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[5] + '\n'
+          }
+          if (err[6] !== false) {
+            errText += `错误项 ${errIndex++}---` + err[6] + '\n'
+          }
+          // 验证是否有错误
+          if (errText.length > 0) {
+            alert(errText)
+            this.editExamText = [
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              [], []]
+            this.exams[0] = []
+            this.showExam('one')
+            // this.isShowExam = false
+          } else { // 无错误，添加编辑过后的考试
+            let obj = {
+              'id': this.temporaryStorageExam.id,
+              'name': this.editExamText[0],
+              'message': this.editExamText[1],
+              'fraction': this.editExamText[2],
+              'author': this.temporaryStorageExam.author,
+              'time': this.editExamText[3],
+              'type': this.editExamText[4],
+              'create': this.temporaryStorageExam.create,
+              'item': this.editExamText[5],
+              'setting': { 'examScore': this.editExamText[6][0], 'examAnswer': this.editExamText[6][1] }
+            }
+            this.exams[0].some((item, index) => {
+              if (obj.id === item.id) {
+                this.exams[0].splice(index, 1, obj)
+                localStorage.removeItem('exam')
+                let examStr = JSON.stringify(this.exams[0])
+                localStorage.setItem('exam', examStr)
+              }
+            })
+            this.exams[0] = []
+            this.editExamText = [
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              "点击这里填写新内容(不填默认为原内容)",
+              [], []]
+            this.showExam('one')
+            this.isShowExam = false
+          }
       }
     },
     newExamItem(str) { // 编辑考题按钮和新建单选题按钮
@@ -1019,6 +1074,9 @@ export default {
         this.isShowBlur = false
       }
     },
+    alertText() {
+      alert('暂时只开放搜索功能')
+    }
   },
   // 生命周期钩子
   mounted() {
