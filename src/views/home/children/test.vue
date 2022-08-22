@@ -6,7 +6,7 @@
     </div>
     <span class="card-box">
       <ul v-if="isShowTest">
-        <li v-for="(item, index) in testList" class="card">
+        <li v-for="(item, index) in testList" class="card" @click="addExam('show', item.id)">
           <div class="test-name">{{ item.name }}</div>
           <div class="test-summary">{{ item.message }}</div>
           <div class="test-bottom">
@@ -23,11 +23,24 @@
               <span class="fraction">满分{{ item.fraction }}分</span>
             </div>
           </div>
-          <router-link :to="'/test/' + item.id"></router-link>
         </li>
       </ul>
       <div v-else class="not-test">抱歉，当前暂无进行中的考试</div>
     </span>
+    <div class="add-exam" v-if="isShowAddExam">
+      <!-- 白色容器 -->
+      <div class="sure-box">
+        <!-- 顶部关闭按钮 -->
+        <div class="sure-top" @click="addExam('back')"></div>
+        <!-- 中间提示文本 -->
+        <div class="sure-main"></div>
+        <!-- 底部操作按钮 -->
+        <div class="sure-option">
+          <button class="sure-back" @click="addExam('back')">取消</button>
+          <button class="sure-go" @click="addExam('add')">确认</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -36,15 +49,40 @@ export default {
   name: 'test',
   data() {
     return {
-      testList: [],
-      isShowTest: false,
+      testList: [], // 考试列表
+      isShowTest: false, // 是否显示没有列表的提示文本
+      isShowAddExam: false, // 是否显示弹出框
+      examId:0, // 存储当前弹出框对应的考试id
     }
   },
-  mounted() {
+  methods: {
+    addExam(str, id) {
+      switch (str) {
+        case 'show':
+          this.examId = id
+          this.isShowAddExam = true
+          break
+        case 'back':
+          this.isShowAddExam = false
+          break
+        case 'add':
+          if(this.$store.state.myExam.length < 1){
+            this.$store.commit('addMyExam',this.examId)
+            this.addExam('back')
+            alert('添加成功')
+          }else{
+            console.log(this.$store.state.myExam);
+          }
+          break
+      }
+
+    }
+  },
+  mounted() { // 钩子函数渲染页面
     if (localStorage.getItem('exam')) {
       let examStr = localStorage.getItem('exam')
       let jsonArr = JSON.parse(examStr);
-      for(let item of jsonArr){
+      for (let item of jsonArr) {
         this.testList.push(item)
       }
       this.isShowTest = true
@@ -59,14 +97,18 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+  position: absolute;
+  top: -50px;
+  width: 100vw;
   min-width: 1280px;
-  height: 100%;
+  height: 100vh;
+  min-height: 760px;
 }
 
 /* 顶部提示信息 */
 .top {
-  position: relative;
+  position: absolute;
+  top: 50px;
   z-index: 1;
   height: 120px;
   width: 100%;
@@ -94,7 +136,7 @@ export default {
 /* 考试卡片 */
 .card-box {
   position: absolute;
-  top: 150px;
+  top: 200px;
   background-color: #f9f9f9;
   box-shadow: 0 0 2px #666;
   border-radius: 10px;
@@ -121,6 +163,7 @@ export default {
   transition: .3s;
   padding: 1%;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .card:hover {
@@ -182,16 +225,6 @@ export default {
   height: 10px;
 }
 
-/* 链接样式 */
-a {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 50;
-}
-
 /* 如果没有考试 */
 .not-test {
   font-size: 20px;
@@ -203,5 +236,108 @@ a {
   transform: translateX(-50%);
   letter-spacing: .5px;
   pointer-events: none;
+}
+
+/* 弹出框 */
+.add-exam {
+  /* display: none; */
+  position: absolute;
+  z-index: 2000;
+  top: -50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100vh + 50px);
+  min-height: 1080px;
+  width: 100%;
+  background-color: rgba(0, 0, 0, .6);
+}
+
+.sure-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 160px;
+  width: 500px;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sure-top {
+  height: 40px;
+  width: 100%;
+  color: #666;
+  cursor: pointer;
+  box-shadow: 1px 0 2px #666;
+}
+
+.sure-top::after {
+  content: 'X';
+  font-size: 20px;
+  margin: 10px 20px;
+  float: right;
+}
+
+.sure-top:hover {
+  color: red;
+}
+
+.sure-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+}
+
+.sure-main::after {
+  content: '添加到我的考试？';
+  font-size: 18px;
+}
+
+.sure-option {
+  position: relative;
+  padding: 0px 10px;
+}
+
+.sure-back {
+  position: absolute;
+  left: 30px;
+  display: inline-block;
+  height: 35px;
+  width: 100px;
+  color: #fff;
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: rgb(158, 137, 137);
+  transition: all .3s ease-in-out;
+}
+
+.sure-go {
+  position: absolute;
+  right: 30px;
+  display: inline-block;
+  height: 35px;
+  width: 100px;
+  color: #fff;
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #339eea;
+  transition: all .3s ease-in-out;
+}
+
+.sure-go:hover {
+  background-color: #53b0f3;
+  transform: scale(1.1);
+}
+
+.sure-back:hover {
+  background-color: rgb(184, 170, 170);
+  transform: scale(1.1);
 }
 </style>
