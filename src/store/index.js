@@ -6,7 +6,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   name:'store',
   state: {
-    userName: '1',// 登录账号存储
+    userName: localStorage.getItem('uN'),// 登录账号存储
     password: '',// 登录密码存储
     newUserName: '',// 注册账号存储
     newPassword: '',// 注册密码存储

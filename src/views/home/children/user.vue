@@ -1,8 +1,7 @@
 <template>
   <div class="container">
     <div class="top">
-      <p>您可以点击下面的其中一张考试卡片开始一场属于您的考试</p>
-      <img src="https://gw.alipayobjects.com/zos/rmsportal/RzwpdLnhmvDJToTdfDPe.png" alt="">
+      <p>这里存储着你自己添加的或者分配给你的考试</p>
     </div>
     <span class="card-box">
       <ul v-if="isShowTest">
@@ -26,7 +25,7 @@
           <router-link :to="'/test/' + item.id"></router-link>
         </li>
       </ul>
-      <div v-else class="not-test">抱歉，当前暂无进行中的考试</div>
+      <div v-else class="not-test">当前你没有需要进行的考试</div>
     </span>
   </div>
 </template>
@@ -42,8 +41,13 @@ export default {
   },
   mounted() {
     if (localStorage.getItem('exam')) {
-      let examStr = localStorage.getItem('exam')
-      let jsonArr = JSON.parse(examStr);
+      if(localStorage.getItem(`myExam${this.$store.state.userName}`)){
+        let examStr = localStorage.getItem('exam')
+        let examArr = JSON.parse(examStr);
+        let myExamStr = localStorage.getItem('myExam')
+        let myExamArr = JSON.parse(myExamStr);
+
+      }
       for(let item of jsonArr){
         this.testList.push(item)
       }
@@ -82,13 +86,6 @@ export default {
   text-align: center;
   width: 50%;
   color: #999;
-}
-
-.top img {
-  position: absolute;
-  display: inline-block;
-  height: 120px;
-  right: 10vw;
 }
 
 /* 考试卡片 */

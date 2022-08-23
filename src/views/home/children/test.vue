@@ -25,19 +25,44 @@
           </div>
         </li>
       </ul>
-      <div v-else class="not-test">抱歉，当前暂无进行中的考试</div>
+      <div v-else class="not-test">当前暂无进行中的考试</div>
     </span>
-    <div class="add-exam" v-if="isShowAddExam">
+    <div class="add-exam" v-if="isShowAddExam[0]">
       <!-- 白色容器 -->
       <div class="sure-box">
         <!-- 顶部关闭按钮 -->
-        <div class="sure-top" @click="addExam('back')"></div>
+        <div class="sure-top" @click="addExam('back', 0)"></div>
         <!-- 中间提示文本 -->
         <div class="sure-main"></div>
         <!-- 底部操作按钮 -->
         <div class="sure-option">
-          <button class="sure-back" @click="addExam('back')">取消</button>
+          <button class="sure-back" @click="addExam('back', 0)">取消</button>
           <button class="sure-go" @click="addExam('add')">确认</button>
+        </div>
+      </div>
+    </div>
+    <div class="add-exam" v-if="isShowAddExam[1]">
+      <!-- 白色容器 -->
+      <div class="sure-box">
+        <!-- 顶部关闭按钮 -->
+        <div class="sure-top" @click="addExam('back', 1)"></div>
+        <!-- 中间提示文本 -->
+        <p>已经添加过这个考试，请勿重复添加</p>
+        <div class="sure-option">
+          <button class="sure-go" @click="addExam('back', 1)">确认</button>
+        </div>
+      </div>
+    </div>
+    <div class="add-exam" v-if="isShowAddExam[2]">
+      <!-- 白色容器 -->
+      <div class="sure-box">
+        <!-- 顶部关闭按钮 -->
+        <div class="sure-top" @click="addExam('back', 2)"></div>
+        <!-- 中间提示文本 -->
+        <p>添加成功</p>
+        <!-- 底部操作按钮 -->
+        <div class="sure-option">
+          <button class="sure-go" @click="addExam('back', 2)">确认</button>
         </div>
       </div>
     </div>
@@ -51,27 +76,52 @@ export default {
     return {
       testList: [], // 考试列表
       isShowTest: false, // 是否显示没有列表的提示文本
-      isShowAddExam: false, // 是否显示弹出框
-      examId:0, // 存储当前弹出框对应的考试id
+      isShowAddExam: [false, false, false], // 是否显示弹出框
+      examId: [0, []], // 存储当前弹出框对应的考试id
     }
   },
   methods: {
     addExam(str, id) {
       switch (str) {
         case 'show':
-          this.examId = id
-          this.isShowAddExam = true
+          this.examId[0] = id
+          this.isShowAddExam.splice(0, 1, true)
           break
         case 'back':
-          this.isShowAddExam = false
+          if (id === 0) {
+            this.isShowAddExam.splice(0, 1, false)
+          } else if (id === 1) {
+            this.isShowAddExam.splice(1, 1, false)
+          } else {
+            this.isShowAddExam.splice(2, 1, false)
+          }
           break
         case 'add':
-          if(this.$store.state.myExam.length < 1){
-            this.$store.commit('addMyExam',this.examId)
-            this.addExam('back')
-            alert('添加成功')
-          }else{
-            console.log(this.$store.state.myExam);
+          if (localStorage.getItem(`myExam${this.$store.state.userName}`)) { //追加考试的情况下
+            let myExamId = localStorage.getItem(`myExam${this.$store.state.userName}`)
+            let jsonArr = JSON.parse(myExamId)
+            let repeat = false // 定义一个标识用来识别是否重复
+            jsonArr.some((item) => {
+              if (item === this.examId[0]) {
+                this.addExam('back', 0)
+                this.isShowAddExam.splice(1, 1, true)
+                repeat = true
+                return true
+              }
+            })
+            if (repeat === false) { //不重复才添加
+              jsonArr.push(this.examId[0])
+              let jsonStr = JSON.stringify(jsonArr)
+              localStorage.setItem(`myExam${this.$store.state.userName}`, jsonStr)
+              this.addExam('back', 0)
+              this.isShowAddExam.splice(2, 1, true)
+            }
+          } else { // 如果第一次添加
+            this.examId[1].push(this.examId[0])
+            let myExamId = JSON.stringify(this.examId[1])
+            localStorage.setItem(`myExam${this.$store.state.userName}`, myExamId)
+            this.addExam('back', 0)
+            this.isShowAddExam.splice(2, 1, true)
           }
           break
       }
@@ -81,7 +131,7 @@ export default {
   mounted() { // 钩子函数渲染页面
     if (localStorage.getItem('exam')) {
       let examStr = localStorage.getItem('exam')
-      let jsonArr = JSON.parse(examStr);
+      let jsonArr = JSON.parse(examStr)
       for (let item of jsonArr) {
         this.testList.push(item)
       }
@@ -339,5 +389,13 @@ export default {
 .sure-back:hover {
   background-color: rgb(184, 170, 170);
   transform: scale(1.1);
+}
+
+.sure-box p {
+  display: block;
+  text-align: center;
+  line-height: 80px;
+  height: 80px;
+
 }
 </style>
