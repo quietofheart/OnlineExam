@@ -12,25 +12,25 @@ const routes = [
     path: '/home',
     redirect: '/home/new',
     component: () => import('@/views/home/home.vue'),
-    children:[
+    children: [
       {
-        path:'new',
+        path: 'new',
         component: () => import('@/views/home/children/new.vue')
       },
       {
-        path:'test',
+        path: 'test',
         component: () => import('@/views/home/children/test.vue')
       },
       {
-        path:'person',
+        path: 'person',
         component: () => import('@/views/home/children/person.vue')
       },
       {
-        path:'user',
-        component: () => import('@/views/home/children/user.vue')
+        path: 'user',
+        component: () => import('@/views/home/children/user.vue'),
       },
       {
-        path:'problem',
+        path: 'problem',
         component: () => import('@/views/home/children/problem.vue')
       }
     ]
@@ -41,7 +41,7 @@ const routes = [
   },
   {
     path: '/help',
-    redirect:'/help/cannotlogin',
+    redirect: '/help/cannotlogin',
     component: () => import('@/views/help/help.vue'),
     children: [
       {
@@ -57,14 +57,18 @@ const routes = [
         component: () => import('@/views/help/children/feedback.vue')
       },
       {
-        path:'text',
+        path: 'text',
         component: () => import('@/views/help/children/text.vue')
       }
     ]
   },
   {
-    path:'*',
-    component:() => import('@/views/notFind/notFind.vue'),
+    path: '/exam',
+    component: () => import('@/views/exam/userExam.vue')
+  },
+  {
+    path: '*',
+    component: () => import('@/views/notFind/notFind.vue'),
   }
 ]
 
@@ -77,7 +81,7 @@ const router = new VueRouter({
 // 前置导航守卫
 router.beforeEach((to, from, next) => {
   // 定义一个需要守卫的导航链接
-  let paths = ['/home','/home/new','/home/test','/home/person','/home/user']
+  let paths = ['/home', '/home/new', '/home/test', '/home/person', '/home/user']
   // 检查导航的地址是否包含在paths数组内
   if (paths.indexOf(to.path) !== -1) {
     // 获取客户端的token

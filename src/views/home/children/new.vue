@@ -47,7 +47,7 @@
             <li class="main-item">
                 <img src="@/assets/img/home/new/skill.svg" alt="">
                 <div style="color: #fc8d60;">技术栈</div>
-                <span>采用Vue框架,router等</span>
+                <span>采用Vue框架,Vuex,router等</span>
             </li>
             <li class="main-item">
                 <img src="@/assets/img/home/new/user.svg" alt="">
