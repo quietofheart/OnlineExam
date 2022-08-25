@@ -515,13 +515,17 @@ export default {
           }
           if (!this.examFractionReg.test(this.examFraction)) {
             this.isShowErr.splice(2, 1, true)
-          } else {
+          } else if (this.examFraction > 0) {
             this.isShowErr.splice(2, 1, false)
+          } else {
+            this.isShowErr.splice(2, 1, true)
           }
           if (!this.examTimeReg.test(this.examTime)) {
             this.isShowErr.splice(3, 1, true)
-          } else {
+          } else if (this.examTime > 0) {
             this.isShowErr.splice(3, 1, false)
+          } else {
+            this.isShowErr.splice(3, 1, true)
           }
           if (!this.examTypeReg.test(this.examType)) {
             this.isShowErr.splice(4, 1, true)
@@ -820,11 +824,17 @@ export default {
           if (!this.examFractionReg.test(this.editExamText[2])) {
             err.splice(2, 1, "请输入纯数字,最少一字符,最多三字符")
           }
+          if (this.editExamText[2] < 1) {
+            err.splice(2, 1, "请输入大于零的纯整数,且最少一字符,最多三字符")
+          }
           if (!this.examTimeReg.test(this.editExamText[3])) {
-            err.splice(2, 1, "请输入纯数字,最少一字符,最多三字符")
+            err.splice(3, 1, "请输入纯数字,最少一字符,最多三字符")
+          }
+          if (this.editExamText[3] < 1) {
+            err.splice(3, 1, "请输入大于零的纯整数,且最少一字符,最多三字符")
           }
           if (!this.examTypeReg.test(this.editExamText[4])) {
-            err.splice(2, 1, "请输入字母或数字或中文,最少一字符,最多十字符")
+            err.splice(4, 1, "请输入字母或数字或中文,最少一字符,最多十字符")
           }
           this.editExamText[5].some(item5 => {
             if (!/^[0-9]{1,3}$/.test(item5.fraction)) {
@@ -1329,7 +1339,7 @@ h2 {
 }
 
 .show-err#input-three::after {
-  content: "请输入纯数字,最少一字符,最多三字符";
+  content: "请输入大于零的纯整数,且最少一字符,最多三字符";
   position: absolute;
   top: 53%;
   color: red;
@@ -1340,7 +1350,7 @@ h2 {
 }
 
 .show-err#input-four::after {
-  content: "请输入纯数字,最少一字符,最多三字符";
+  content: "请输入大于零的纯整数,且最少一字符,最多三字符";
   position: absolute;
   top: 73%;
   color: red;
