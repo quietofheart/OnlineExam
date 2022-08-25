@@ -25,13 +25,26 @@
       <li v-if="isShowExamItem[0]">
         <p>*单选题</p>
         <ul class="main-item">
-          <li v-for="(item,index) in this.itemExam[0]">
+          <li v-for="(item, index) in this.itemExam[0]">
             <ul>
-              <li>第{{index + 1}}题.{{ item.name }}({{ item.fraction }}分)</li>
-              <li>A.{{ item.option[0] }}</li>
-              <li>B.{{ item.option[1] }}</li>
-              <li>C.{{ item.option[2] }}</li>
-              <li>D.{{ item.option[3] }}</li>
+              <li>{{ index + 1 }}. {{ item.name }} <p>({{ item.fraction }}分)</p>
+              </li>
+              <li>
+                <input type="radio" :name="index + item.name" :id="index + item.option[0]">
+                <label :for="index + item.option[0]">A.{{ item.option[0] }}</label>
+              </li>
+              <li>
+                <input type="radio" :name="index + item.name" :id="index + item.option[1]">
+                <label :for="index + item.option[1]">B.{{ item.option[1] }}</label>
+              </li>
+              <li>
+                <input type="radio" :name="index + item.name" :id="index + item.option[2]">
+                <label :for="index + item.option[2]">C.{{ item.option[2] }}</label>
+              </li>
+              <li>
+                <input type="radio" :name="index + item.name" :id="index + item.option[3]">
+                <label :for="index + item.option[3]">D.{{ item.option[3] }}</label>
+              </li>
             </ul>
           </li>
         </ul>
@@ -141,11 +154,7 @@ export default {
 /* 根 */
 .container {
   position: relative;
-  width: 100vw;
   min-width: 1280px;
-  height: 100vh;
-  min-height: 760px;
-  background-color: rgba(20, 20, 20, .1);
 }
 
 /* 顶部 */
@@ -228,5 +237,36 @@ export default {
 
 .main>li {
   width: 100%;
+  /* background-color: antiquewhite; */
+}
+
+.main>li>p {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.main-item>li {
+  margin: 30px 0;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  text-indent: 2em;
+  line-height: 20px;
+  letter-spacing: .5px;
+}
+
+.main-item>li>ul>li {
+  margin: 10px 0;
+}
+
+.main-item>li>ul>li:nth-child(1) {
+  font-size: 16px;
+  text-indent: 0;
+}
+
+.main-item>li>ul>li:nth-child(1) p {
+  display: inline-block;
+  color: rgba(20, 20, 20, .3);
 }
 </style>
