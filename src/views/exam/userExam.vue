@@ -26,23 +26,23 @@
         <p>*单选题</p>
         <ul class="main-item">
           <li v-for="(item, index) in this.itemExam[0]">
-            <ul>
+            <ul @change="aaaa()">
               <li>{{ index + 1 }}. {{ item.name }} <p>({{ item.fraction }}分)</p>
               </li>
               <li>
-                <input type="radio" :name="index + item.name" :id="index + item.option[0]">
+                <input type="radio" :name="index + item.name" :id="index + item.option[0]" value="A" v-model="radioOption[index]">
                 <label :for="index + item.option[0]">A.{{ item.option[0] }}</label>
               </li>
               <li>
-                <input type="radio" :name="index + item.name" :id="index + item.option[1]">
+                <input type="radio" :name="index + item.name" :id="index + item.option[1]" value="B" v-model="radioOption[index]">
                 <label :for="index + item.option[1]">B.{{ item.option[1] }}</label>
               </li>
               <li>
-                <input type="radio" :name="index + item.name" :id="index + item.option[2]">
+                <input type="radio" :name="index + item.name" :id="index + item.option[2]" value="C" v-model="radioOption[index]">
                 <label :for="index + item.option[2]">C.{{ item.option[2] }}</label>
               </li>
               <li>
-                <input type="radio" :name="index + item.name" :id="index + item.option[3]">
+                <input type="radio" :name="index + item.name" :id="index + item.option[3]" value="D" v-model="radioOption[index]">
                 <label :for="index + item.option[3]">D.{{ item.option[3] }}</label>
               </li>
             </ul>
@@ -58,6 +58,9 @@
       <li v-if="isShowExamItem[3]">
         <p>*填空题</p>
       </li>
+      <li>
+        <button>提交试卷</button>
+      </li>
     </ul>
   </div>
 </template>
@@ -71,6 +74,7 @@ export default {
       itemExam: [[], [], [], []], //考题分类
       examTime: [],// 考试限时
       isShowExamItem: [false, false, false, false],
+      radioOption:[],// 存储单选题选中的答案
     }
   },
   methods: {
@@ -141,6 +145,9 @@ export default {
           clearInterval(examTimeOut)
         }
       }, 1000)
+    },
+    aaaa(){
+      console.log(this.radioOption);
     }
   },
   mounted() { //钩子
@@ -163,7 +170,6 @@ export default {
   height: 100px;
   width: 100%;
   box-shadow: 3px 0 3px #000;
-  background-color: rgba(20, 20, 20, .1);
 }
 
 .title {
@@ -237,7 +243,6 @@ export default {
 
 .main>li {
   width: 100%;
-  /* background-color: antiquewhite; */
 }
 
 .main>li>p {
