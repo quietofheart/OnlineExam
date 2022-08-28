@@ -51,8 +51,8 @@
             </li>
             <li class="main-item">
                 <img src="@/assets/img/home/new/user.svg" alt="">
-                <div style="color: #f790a3;">受限制的注册用户</div>
-                <span>搭配特定邀请码才可注册用户</span>
+                <div style="color: #f790a3;">用户信息给管理</div>
+                <span>简便管理所有用户信息</span>
             </li>
             <li class="main-item">
                 <img src="@/assets/img/home/new/ui.svg" alt="">
