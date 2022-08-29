@@ -231,7 +231,7 @@ export default {
       // 计算单选题
       this.itemExam[0].some((item, index) => {
         if (item.answer === this.radioOption[index]) {
-          this.radioOptionFraction += item.fraction //答案正确则增加得分
+          this.radioOptionFraction += parseInt(item.fraction) //答案正确则增加得分
         } else {
           this.radioOptionErr.push(index + 1) // 错误则记录错误的题目索引
         }
