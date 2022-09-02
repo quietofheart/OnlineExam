@@ -80,21 +80,32 @@ const router = new VueRouter({
 
 // 前置导航守卫
 router.beforeEach((to, from, next) => {
-  // 定义一个需要守卫的导航链接
-  let paths = ['/home', '/home/new', '/home/test', '/home/person', '/home/user']
+  // 定义一个需要守卫的导航链接正则
+  let isNext = /^\/home/.test(to.path)
   // 检查导航的地址是否包含在paths数组内
-  if (paths.indexOf(to.path) !== -1) {
+  if (isNext) {
     // 获取客户端的token
-    const token = localStorage.getItem('token')
-    if (token === 'Bearer 9767a61a606ddfe2c3d8d02d351c74ea') {
-      // 如果token正确 直接放行
-      next()
-    } else {
-      // 没有则跳转到登录页面
-      next('/login')
-    }
-  } else {
-    //如访问的不需要限制，直接跳转。
+    const token = sessionStorage.getItem('token')
+    Vue.prototype.$http({
+      url: '/api/home',
+      baseURL: 'http://127.0.0.1:80',
+      method: 'POST',
+      headers: { 'Authorization': token, }
+    }).then((res) => {
+      if (res.data.status == '200') {
+        // token验证成功 直接放行
+        next()
+      } else {
+        // token验证失败 跳转到登录页面
+        if (from.path !== '/login') {
+          next('/login')
+        } else {
+          alert('请重新登录')
+        }
+      }
+    })
+  } else{
+    // 不包含 直接跳转
     next()
   }
 })

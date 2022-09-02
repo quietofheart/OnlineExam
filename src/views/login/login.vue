@@ -21,13 +21,13 @@
           </div>
 
           <!-- 登录 -->
-          <input type="text" placeholder="账号" v-model="userName" @input="notShowErrName" />
+          <input type="text" placeholder="账号" v-model="userName" @input="notShowErrName" @focus="owlShow(false)" />
           <div v-if="isShowErrName" class="err-tips-box err-tips-left">
             <span class="err-text">只允许字母和数字，至少四字符，最多十五字符！</span>
           </div>
 
-          <input :type="[inputType[0]]" placeholder="密码" v-model="password" @input="notShowErrPwd" @focus="owlShow"
-            @blur="owlShow" id="password"/>
+          <input :type="[inputType[0]]" placeholder="密码" v-model="password" @input="notShowErrPwd"
+            @focus="owlShow(true)" id="password" />
           <label for="password" class="eye-s" :class="{ 'eye': inputType[1] }" @click="showPwd"></label>
           <div v-if="isShowErrPwd" class="err-tips-box err-tips-right">
             <span class="err-text">只允许字母数字和部分特殊符号，至少六字符，最多十九字符！</span>
@@ -37,7 +37,7 @@
 
           <button :class="{ 'loading': isShowLoading }" @click="login">登录</button>
 
-          <div v-if="isShowBtnErr" class="err-text-btn">账号或密码错误</div>
+          <div v-if="isShowBtnErr" class="err-text-btn">{{ errText }}</div>
         </form>
       </div>
 
@@ -69,7 +69,7 @@
           <router-link to="/help/text">什么是注册邀请码？</router-link>
 
           <button :class="{ 'loading': isShowLoading }" @click="newUser">注册</button>
-          <div v-if="isShowBtnErr" class="err-text-new-btn">账号已被占用或注册邀请码无效！</div>
+          <div v-if="isShowBtnErr" class="err-text-new-btn">{{ errText }}</div>
 
         </form>
       </div>
@@ -105,7 +105,7 @@ export default {
       newPassword: '',// 注册密码存储
       newEmail: '',// 注册邮箱存储
       newText: '',// 注册邀请码存储
-      newTextTest: 'jingxin', //服务器请求的注册邀请码
+      errText: '用户名或密码错误',
 
       regName: /^[a-zA-Z0-9]{4,15}$/,// 账号正则
       regPwd: /^[a-zA-Z0-9_!@#-.:]{6,19}$/,// 密码正则
@@ -133,8 +133,12 @@ export default {
       this.isShowLoading = false// btn按钮加载中效果
       this.isShowBtnErr = false// 账号密码错误提示
     },
-    owlShow() {// 密码框获取焦点猫头鹰遮挡眼睛，失去焦点则不遮挡
-      this.isShowOwl = !this.isShowOwl
+    owlShow(bool) {// 密码框获取焦点猫头鹰遮挡眼睛，失去焦点则不遮挡
+      if (bool) {
+        this.isShowOwl = true
+      } else {
+        this.isShowOwl = false
+      }
     },
     notShowErrName() {// 输入内容时隐藏账号错误提示
       this.isShowErrName = false
@@ -152,6 +156,7 @@ export default {
       if (this.inputType[0] === 'password') {
         this.inputType.splice(1, 1, true)
         this.inputType.splice(0, 1, 'text')
+
       } else {
         this.inputType.splice(1, 1, false)
         this.inputType.splice(0, 1, 'password')
@@ -173,26 +178,45 @@ export default {
           this.isShowErrPwd = true
           this.isShowBtnErr = false
         }, 500)
-      } else if (this.userName === localStorage.getItem('uN') && this.password === localStorage.getItem('pw') || this.userName === 'admin' && this.password === 'admin123') {
-        // 检测账号密码是否跟指定值一致(后续引入数据库来进行校验)
-        // 一致则写入token身份标志
-        localStorage.setItem('token', 'Bearer 9767a61a606ddfe2c3d8d02d351c74ea')
-        localStorage.setItem('uN', this.userName)
-        // 延时0.5秒跳转页面
-        setTimeout(() => {
-          this.isShowLoading = false
-          this.isShowBtnErr = false
-          this.$router.push('/home')
-        }, 500)
       } else {
-        setTimeout(() => {
-          this.isShowLoading = false
-          this.isShowBtnErr = true
-        }, 500)
-
+        // 发送网络请求
+        this.$http({
+          url: '/login',
+          baseURL: 'http://127.0.0.1:80',
+          method: 'POST',
+          headers: { 'x-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-=urlencoded;charset=UTF-8' },
+          data: {
+            username: this.userName,
+            password: this.password
+          }
+        }).then(res => { //promise的方式来返回请求结果。
+          switch (res.data.status) {
+            case 200: //登录成功
+              sessionStorage.setItem('token', res.data.token)
+              this.isShowLoading = false
+              this.isShowBtnErr = false
+              this.$router.push('/home')
+              break
+            case 400: // 用户名或密码不正确
+              this.errText = '用户名或密码错误'
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              break
+            case 401: // 用户已禁用
+              this.errText = '用户已禁用'
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              break
+            default:
+              this.errText = '未定义错误'
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              break
+          }
+        })
       }
     },
-    newUser() {
+    newUser() { // 注册相关验证和处理
       this.isShowLoading = true //打开加载效果
       if (!this.regName.test(this.newUserName)) {
         // 检查账号格式是否正确，不正确显示错误提示
@@ -223,26 +247,52 @@ export default {
           this.isShowBtnErr = false
         }, 500)
       } else {
-        if (this.newText === this.newTextTest && !localStorage.getItem('nTT')) {
-          setTimeout(() => {
-            alert('注册成功!')
-            this.isShowLoading = false
-            this.isShowBtnErr = false
-            localStorage.setItem('nTT', 'asadADAdads12594__!@#dasdADAS456DASD156DSADDsaD')
-            localStorage.setItem('uN', this.newUserName)
-            localStorage.setItem('pw', this.newPassword)
-            this.btnClass()
-            this.userName = this.newUserName
-            this.password = this.newPassword
-          }, 500)
-        } else {
-          setTimeout(() => {
-            this.isShowLoading = false
-            this.isShowBtnErr = true
-          }, 1000)
-        }
+        // 发送网络请求
+        this.$http({
+          url: '/register',
+          baseURL: 'http://127.0.0.1:80',
+          method: 'POST',
+          headers: { 'x-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-=urlencoded;charset=UTF-8' },
+          data: {
+            username: this.newUserName,
+            password: this.newPassword,
+            email: this.newEmail,
+            invitationCode: this.newText
+          }
+        }).then(res => {
+          switch (res.data.status) {
+            case 400:
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              this.errText = '注册邀请码无效'
+              break
+            case 401:
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              this.errText = '用户名已被占用'
+              break
+            case 402:
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              this.errText = '邮箱已被占用'
+              break
+            case 500:
+              this.isShowLoading = false
+              this.isShowBtnErr = true
+              this.errText = '数据库读取失败'
+              break
+            case 200:
+              alert('注册成功')
+              this.isShowLoading = false
+              this.isShowBtnErr = false
+              this.btnClass()
+              this.userName = this.newUserName
+              this.password = this.newPassword
+              break
+          }
+        })
       }
-    },
+    }
   }
 }
 </script>
@@ -251,7 +301,6 @@ export default {
 body {
   margin: 0;
   padding: 0;
-
 }
 
 #flex-container {
